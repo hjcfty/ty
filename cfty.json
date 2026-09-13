@@ -10,6 +10,14 @@
             "api": "./py/秒播影视.py"
         },
         {
+            "key": "webhome",
+            "name": "加强玩法",
+            "type": 3,
+            "api": "csp_WebHome",
+            "ext": "./vox_webhome/ext.json",
+            "changeable": 0
+        },
+        {
             "key": "央",
             "name": "节目",
             "type": 3,
