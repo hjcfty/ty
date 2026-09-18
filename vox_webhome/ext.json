@@ -1,0 +1,125 @@
+{
+    "selfKey": "webhome",
+    "sites": [
+        {
+            "key": "Yxhj",
+            "name": "游戏合集",
+            "type": 3,
+            "api": "csp_Yxhj",
+            "folder": "./html/game.json",
+            "pic": "https://gips2.baidu.com/it/u=4223283450,2506453931&fm=3074&app=3074&f=JPEG",
+            "proxy": "noproxy",
+            "chromeMode": "edge"
+        },
+        {
+            "key": "Qxin",
+            "name": "新qq音乐",
+            "type": 3,
+            "api": "csp_Qyin",
+            "homePage": "https://am-4u2.pages.dev/",
+            "pic": "https://5b0988e595225.cdn.sohucs.com/images/20190609/0f56f42a3e744d35a13286a311a9f8fa.jpeg",
+            "proxy": "noproxy",
+            "chromeMode": "edge"
+        },
+        {
+            "key": "XBW",
+            "name": "小霸王游戏",
+            "type": 3,
+            "api": "csp_XBW",
+            "homePage": "https://sps.yy-gp.com/h9jgg/i.html",
+            "pic": "https://wx4.sinaimg.cn/mw690/676f24e0ly1g26dy96mn9j20m80m8dt2.jpg",
+            "proxy": "noproxy",
+            "chromeMode": "edge"
+        },
+        {
+            "key": "聚合",
+            "name": "虎牙聚合",
+            "type": 3,
+            "api": "csp_聚合",
+            "pic": "https://cdn-visitor-eo.7moor-fs2.com/im/1cf621c0-5c37-11e9-9460-658dbd81beae/2026-09-14-08:18:02/1789345082920/ff909da8-3fa7-4901-89df-c17962a7912b.png",
+            "homePage": "https://live-a3r.pages.dev/"
+        },
+        {
+            "key": "哔哩",
+            "name": "哔哩哔哩",
+            "type": 3,
+            "api": "csp_哔哩",
+            "pic": "https://cdn-visitor-eo.7moor-fs2.com/im/1cf621c0-5c37-11e9-9460-658dbd81beae/2026-09-14-08:24:16/1789345456195/e77ec592-8e6c-4520-8697-bfb4695b2406.png",
+            "homePage": "https://bili-1k4.pages.dev/"
+        },
+        {
+            "key": "wo",
+            "name": "玩偶盘搜",
+            "type": 3,
+            "api": "csp_玩偶",
+            "homePage": "https://wo.vivas.cc.cd"
+        },
+        {
+            "key": "pm",
+            "name": "pomo盘搜影视",
+            "type": 3,
+            "api": "csp_po",
+            "homePage": "https://pomo.920410.xyz/"
+        },
+        {
+            "key": "e",
+            "name": "ECLIPSE影视",
+            "type": 3,
+            "api": "csp_ec",
+            "homePage": "https://vvee.ccwu.cc/"
+        },
+        {
+            "key": "nostr",
+            "name": "nostr影单",
+            "type": 3,
+            "api": "csp_影单",
+            "pic": "",
+            "homePage": "https://noir-cmp.pages.dev/"
+        },
+        {
+            "key": "sotvla",
+            "name": "搜影视",
+            "type": 3,
+            "api": "csp_Builtin",
+            "homePage": "https://www.sotvla.cc/",
+            "pic": "https://www.sotvla.cc/favicon.ico",
+            "chromeMode": "edge",
+            "extensions": [
+                {
+                    "id": "sotvla-native-enhance",
+                    "name": "SOTVLA App 播放增强",
+                    "version": "1.2.2",
+                    "runAt": "document-start",
+                    "js": [
+                        "./sotvla/sotvla.js"
+                    ]
+                }
+            ]
+        },
+        {
+            "key": "tyyy",
+            "name": "天扬音乐",
+            "type": 3,
+            "api": "csp_音乐",
+            "pic": "https://cdn-visitor-eo.7moor-fs2.com/im/1cf621c0-5c37-11e9-9460-658dbd81beae/2026-09-14-07:46:17/1789343177544/d5a12e83-e056-4c18-8afe-a2e69969396b.png",
+            "homePage": "https://sps.yy-gp.com/h2lfh/i.html"
+        },
+        {
+            "key": "ts",
+            "name": "听书",
+            "type": 3,
+            "api": "csp_听书",
+            "homePage": "https://ts-agk.pages.dev/"
+        },
+        {
+            "key": "QQYY",
+            "name": "音乐",
+            "type": 3,
+            "api": "csp_Qqyy",
+            "homePage": "https://q-16a.pages.dev/",
+            "pic": "https://5b0988e595225.cdn.sohucs.com/images/20190609/0f56f42a3e744d35a13286a311a9f8fa.jpeg",
+            "proxy": "noproxy",
+            "chromeMode": "edge"
+        }
+    ]
+}
