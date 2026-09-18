@@ -1,0 +1,298 @@
+{
+    "spider": "./jar/vox.jar;md5;2ed2a6be7965e60313a7a892b1e89c96",
+    "notice": "天扬在线",
+    "logo": "https://img1.tucang.cc/api/image/show/e1e010e963362a803772e929d601d9a4",
+    "sites": [
+        {
+            "key": "py秒播",
+            "name": "🧡天扬影视🧡",
+            "type": 3,
+            "api": "./py/秒播影视.py"
+        },
+        {
+            "key": "webhome",
+            "name": "加强玩法",
+            "type": 3,
+            "api": "csp_WebHome",
+            "ext": "./vox_webhome/ext.json",
+            "changeable": 0
+        },
+        {
+            "key": "央",
+            "name": "节目",
+            "type": 3,
+            "jar": "./jar/WvSpider.jar;md5;9f2566e982e004a1ca30f15390e3f216",
+            "api": "csp_WvSpider",
+            "ext": "./py/央播.js"
+        },
+        {
+            "key": "cat直憋",
+            "name": "电视节目2",
+            "type": 3,
+            "hide": 1,
+            "api": "./py/直憋.js"
+        },
+        {
+            "key": "py多多",
+            "name": "多多影视",
+            "type": 3,
+            "api": "./py/多多影视.py"
+        },
+        {
+            "key": "py秒播瓜子",
+            "name": "瓜子影视",
+            "type": 3,
+            "api": "./py/瓜子.py"
+        },
+        {
+            "key": "py看客",
+            "name": "看客影视",
+            "type": 3,
+            "api": "./py/看客.py"
+        },
+        {
+            "key": "py枫叶",
+            "name": "枫叶影视",
+            "type": 3,
+            "api": "./py/枫叶.py"
+        },
+        {
+            "key": "cat_荐片app",
+            "name": "荐片影视",
+            "type": 3,
+            "api": "./py/荐片.js"
+        },
+        {
+            "key": "金牌",
+            "name": "金牌影视",
+            "type": 3,
+            "api": "./py/金牌.js"
+        },
+        {
+            "key": "pyrb",
+            "name": "热播影视",
+            "type": 3,
+            "api": "./py/热播.py"
+        },
+        {
+            "key": "开心py",
+            "name": "开心影视",
+            "type": 3,
+            "api": "./py/开心.py"
+        },
+        {
+            "key": "py华",
+            "name": "华数影视",
+            "type": 3,
+            "api": "./py/华数.py"
+        },
+        {
+            "key": "1905",
+            "name": "1905",
+            "type": 3,
+            "api": "./py/1905.py"
+        },
+        {
+            "key": "cat西瓜",
+            "name": "西瓜影视cat",
+            "type": 3,
+            "api": "./py/西瓜cat.js"
+        },
+        {
+            "key": "py西瓜",
+            "name": "西瓜影视py",
+            "type": 3,
+            "api": "./py/西瓜.py"
+        },
+        {
+            "key": "py韩",
+            "name": "韩小圈",
+            "type": 3,
+            "api": "./py/韩小圈.py"
+        },
+        {
+            "key": "py袋鼠",
+            "name": "袋鼠影视",
+            "type": 3,
+            "api": "./py/袋鼠影视.py"
+        },
+        {
+            "key": "韩剧网1",
+            "name": "韩剧网",
+            "type": 3,
+            "api": "./py/韩剧网.py"
+        },
+        {
+            "key": "爸",
+            "name": "剧爸爸",
+            "type": 3,
+            "api": "./py/剧爸爸.py"
+        },
+        {
+            "key": "工厂",
+            "name": "影视工厂",
+            "type": 3,
+            "api": "./py/影视工厂.py"
+        },
+        {
+            "key": "共",
+            "name": "共青春",
+            "type": 3,
+            "api": "./py/共青春.py"
+        },
+        {
+            "key": "歪比",
+            "name": "歪比巴卜",
+            "type": 3,
+            "api": "./py/歪比巴卜.py"
+        },
+        {
+            "key": "csp_Bili",
+            "name": "哔哩合集",
+            "type": 3,
+            "api": "csp_BiliJs",
+            "filterable": 1,
+            "searchable": 1,
+            "changeable": 0,
+            "ext": {
+                "type": "./json/bili.json"
+            }
+        },
+        {
+            "key": "py_红2",
+            "name": "果子短剧2",
+            "type": 3,
+            "api": "./py/果子.py"
+        },
+        {
+            "key": "短剧1",
+            "name": "短剧聚合",
+            "type": 3,
+            "api": "./py/短剧聚合.py"
+        },
+        {
+            "key": "py_短剧",
+            "name": "短剧聚合2",
+            "type": 3,
+            "api": "./py/短剧合集.py"
+        },
+        {
+            "key": "py星芽",
+            "name": "星芽短剧",
+            "type": 3,
+            "api": "./py/星芽.py"
+        },
+        {
+            "key": "p七猫",
+            "name": "七猫短剧",
+            "type": 3,
+            "api": "./py/七猫短剧.py"
+        },
+        {
+            "key": "p河马",
+            "name": "河马短剧",
+            "type": 3,
+            "api": "./py/河马短剧.py"
+        },
+        {
+            "key": "py直",
+            "name": "聚合直播2",
+            "type": 3,
+            "api": "./py/聚合直播.py"
+        },
+        {
+            "key": "py_酷音乐",
+            "name": "酷音",
+            "type": 3,
+            "api": "./py/哭我.py"
+        },
+        {
+            "key": "听书1",
+            "name": "275听书",
+            "type": 3,
+            "api": "./py/275听书.py"
+        },
+        {
+            "key": "py听书2",
+            "name": "悦听书",
+            "type": 3,
+            "api": "./py/悦听吧.py"
+        },
+        {
+            "key": "采集",
+            "name": "采集之王",
+            "type": 3,
+            "hide": 1,
+            "api": "./py/采集之王.py"
+        },
+        {
+            "key": "bfzycj",
+            "name": "暴风影视",
+            "type": 1,
+            "api": "http://by.bfzyapi.com/api.php/provide/vod",
+            "searchable": 1,
+            "quickSearch": 1,
+            "filterable": 1,
+            "categories": [
+                "爱情片",
+                "科幻片",
+                "恐怖片",
+                "喜剧片",
+                "动作片",
+                "动画片",
+                "纪录片",
+                "战争片",
+                "剧情片",
+                "预告片",
+                "重生民国",
+                "穿越年代",
+                "现代言情",
+                "反转爽文",
+                "女恋总裁",
+                "闪婚离婚",
+                "都市脑洞",
+                "古装仙侠",
+                "足球",
+                "篮球",
+                "网球",
+                "斯诺克",
+                "电影解说",
+                "欧美综艺",
+                "大陆综艺",
+                "港台综艺",
+                "日韩综艺",
+                "日韩动漫",
+                "欧美动漫",
+                "港台动漫",
+                "海外动漫",
+                "国产动漫",
+                "海外剧",
+                "泰国剧",
+                "香港剧",
+                "韩国剧",
+                "台湾剧",
+                "日本剧",
+                "欧美剧",
+                "国产剧"
+            ]
+        },
+        {
+            "key": "csp_Config",
+            "name": "❤️配置中心❤️",
+            "type": 3,
+            "api": "csp_Config",
+            "searchable": 0,
+            "changeable": 0
+        },
+        {
+            "key": "push_agent",
+            "name": "😋链接┃推送",
+            "type": 3,
+            "api": "csp_Push",
+            "searchable": 0,
+            "changeable": 0,
+            "hide": 1,
+            "timeout": 60
+        }
+    ]
+}
