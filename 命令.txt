@@ -1,0 +1,168 @@
+Termux + GitHub 自动同步完整备忘录
+
+一、安装基础环境（换新手机后执行一次）
+
+```bash
+# 安装 Git 和 GitHub 官方命令行工具
+pkg install git gh
+
+# 登录 GitHub（会提示打开浏览器授权，按提示操作即可）
+gh auth login
+```
+
+作用：安装好底层工具，并登录你的 GitHub 账号，登录一次就行，以后不用再登。
+
+二、克隆仓库到手机（换新手机后执行一次）
+
+```bash
+# 克隆你的 GitHub 仓库，并命名为 cfty
+git clone https://github.com/hjcfty/ty.git cfty
+
+# 进入克隆下来的仓库文件夹
+cd cfty
+```
+
+作用：把 GitHub 仓库下载到本地，以后所有操作都在这个文件夹里。
+
+三、恢复你的“一键同步”脚本（换新手机后执行一次）
+
+```bash
+# 把仓库里的脚本复制到系统命令目录，变成全局命令
+cp ~/cfty/c.sh $PREFIX/bin/c
+
+# 给这个命令加上执行权限
+chmod +x $PREFIX/bin/c
+```
+
+作用：把脚本变成系统命令，以后随便在哪里，敲一个 c 就能一键同步上传。
+
+四、日常使用（以后每次更新文件只需这一句）
+
+```bash
+c
+```
+
+作用：自动把手机 /storage/emulated/0/接口备份/ 里的所有内容，覆盖复制到仓库，然后自动提交并推送到 GitHub。
+
+五、查看仓库里的文件（想检查的时候用）
+
+```bash
+# 先进入仓库
+cd ~/cfty
+
+# 竖着显示文件列表
+ls -1
+
+# 显示详细文件列表（大小、时间等）
+ls -l
+```
+
+六、手动把文件复制到仓库（不用脚本的时候）
+
+```bash
+# 复制单个文件到仓库
+cp /storage/emulated/0/接口备份/ys.json ~/cfty/
+
+# 复制整个文件夹（包含里面的全部内容）到仓库
+cp -r /storage/emulated/0/接口备份/html ~/cfty/
+```
+
+七、手动上传三步曲（不用脚本的时候）
+
+```bash
+# 追踪所有改动（包括新增、修改、删除）
+git add -A
+
+# 提交改动，并写上备注
+git commit -m "更新说明"
+
+# 推送到 GitHub
+git push
+```
+
+八、如果推送失败（网络卡住或报错时）
+
+```bash
+# 先把 GitHub 网页上的最新改动拉下来
+git pull --rebase
+
+# 然后再推送
+git push
+```
+
+作用：防止你在网页上改过东西，而手机本地没同步，导致推送被拒。
+
+九、如果想给 Git 挂代理（上传慢的时候）
+
+```bash
+# 设置代理（假设端口是 7890，请换成你实际使用的端口）
+git config --global http.proxy http://127.0.0.1:7890
+git config --global https.proxy http://127.0.0.1:7890
+
+# 取消代理（不想用的时候）
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+```
+
+十、如果登录出问题了（重新登录）
+
+```bash
+# 检查登录状态
+gh auth status
+
+# 重新登录
+gh auth login
+
+# 让 Git 重新使用 gh 的登录凭据
+gh auth setup-git
+```
+
+十一、终极版 c 脚本源码（如果脚本丢了，用这个重建）
+
+```bash
+cat > $PREFIX/bin/c << 'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+
+# 0. 安全锁：防止接口备份被清空导致仓库被清空
+if [ -z "$(ls -A /storage/emulated/0/接口备份/)" ]; then
+    echo "⚠️ 接口备份文件夹为空，为保护仓库已停止上传。"
+    exit 1
+fi
+
+# 1. 把接口备份里的所有东西（含文件夹）覆盖复制到仓库
+cp -r /storage/emulated/0/接口备份/* ~/cfty/
+
+# 2. 进入仓库文件夹
+cd ~/cfty
+
+# 3. 检查有没有文件变化
+if git diff --quiet && git diff --cached --quiet; then
+    echo "📭 没有新变化，不用上传。"
+else
+    echo "📦 检测到变化，正在上传..."
+    
+    # 自动追踪所有改动（包含新增、修改、删除）
+    git add -A
+    
+    # 列出本次改动的文件清单
+    echo "---------- 本次同步的文件 ----------"
+    git status -s
+    echo "-----------------------------------"
+    
+    # 同步远程最新改动（防止网页端改过导致推送失败）
+    git pull --rebase
+    
+    # 提交并推送
+    git commit -m "自动同步 $(date +%Y-%m-%d)"
+    git push
+    echo "✅ 上传成功！"
+fi
+EOF
+
+# 给脚本加执行权限
+chmod +x $PREFIX/bin/c
+```
+
+---
+
+这就是今天你用到的所有东西了。 直接全部复制，存在备忘录里。以后换手机，从上往下抄一遍，一切都能恢复。日常你只要记住最后那个 c 就行了。
