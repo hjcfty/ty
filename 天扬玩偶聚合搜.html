@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>天扬搜影</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root{
+          --netease-red:#ec4141;
+          --netease-red-dark:#d73535;
+          --netease-red-light:#ff6b6b;
+          --netease-bg:#ffffff;
+          --netease-bg-soft:#fafafa;
+          --netease-text:#333333;
+          --netease-text-sub:#999999;
+          --netease-border:#f0f0f0;
+          --netease-line:#e9e9e9;
+        }
+        body {
+          font-family: -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+          background: var(--netease-bg); color: var(--netease-text); padding: 20px 20px 40px;
+        }
+        .app {
+          max-width: 900px;
+          margin: 0 auto;
+          padding-top: calc(28vh + env(safe-area-inset-top, 0px));
+        }
+        .header { text-align: center; padding: 0 0 16px; }
+        .header h1 { font-size: 36px; font-weight: 800; letter-spacing: 2px; color: var(--netease-text); }
+        .header h1 span { color: var(--netease-red); }
+        .header .sub { font-size: 15px; color: var(--netease-text-sub); margin-top: 4px; letter-spacing: 1px; }
+        
+        .search-wrapper { position: relative; margin: 12px 0 20px; }
+        .search-box { display: flex; gap: 10px; }
+        .search-box input {
+          flex: 1; padding: 12px 18px; border: 1.5px solid var(--netease-border); border-radius: 30px;
+          font-size: 16px; background: #fff; outline: none;
+          transition: border 0.2s, box-shadow 0.2s;
+          color: var(--netease-text);
+        }
+        .search-box input::placeholder { color: var(--netease-text-sub); }
+        .search-box input:focus {
+          border-color: var(--netease-red); box-shadow: 0 0 0 3px rgba(236,65,65,0.12);
+        }
+        .search-box button {
+          padding: 12px 28px; border: none; border-radius: 30px;
+          background: var(--netease-red); color: #fff; font-size: 16px; font-weight: 700;
+          cursor: pointer; transition: background 0.2s, transform 0.1s;
+          white-space: nowrap; box-shadow: 0 4px 10px rgba(236,65,65,0.25);
+        }
+        .search-box button:hover { background: var(--netease-red-dark); }
+        .search-box button:active { transform: scale(0.97); }
+        .search-box button:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .history-dropdown {
+          position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+          background: #fff; border: 1px solid var(--netease-border); border-radius: 16px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.08); max-height: 220px; overflow-y: auto;
+          display: none; z-index: 100; padding: 6px 0;
+        }
+        .history-dropdown.active { display: block; }
+        .history-dropdown .history-item {
+          display: flex; justify-content: space-between; align-items: center;
+          padding: 10px 16px; cursor: pointer; font-size: 15px; color: var(--netease-text);
+        }
+        .history-dropdown .history-item:hover { background: var(--netease-bg-soft); }
+        .history-dropdown .history-item .del-btn {
+          background: none; border: none; color: #cbd5e1; font-size: 16px; padding: 0 4px; cursor: pointer;
+        }
+        .history-dropdown .history-item .del-btn:hover { color: var(--netease-red); }
+        .history-dropdown .empty-history { padding: 20px 16px; text-align: center; color: var(--netease-text-sub); font-size: 14px; }
+        .history-dropdown .clear-history-btn {
+          display: block; width: 100%; text-align: center; padding: 10px;
+          border: none; border-top: 1px solid var(--netease-line); background: transparent;
+          color: var(--netease-text-sub); font-size: 13px; cursor: pointer;
+        }
+        .history-dropdown .clear-history-btn:hover { background: var(--netease-bg-soft); color: var(--netease-red); }
+        
+        .site-filter {
+          position: fixed;
+          left: 0; right: 0; bottom: 0;
+          z-index: 50;
+          display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px;
+          padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+          scrollbar-width: none; -webkit-overflow-scrolling: touch;
+          background: rgba(255,255,255,0.96);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-top: 1px solid var(--netease-line);
+          box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
+        }
+        .site-filter::-webkit-scrollbar { display: none; }
+        .site-chip {
+          flex: 0 0 auto; padding: 6px 16px; border-radius: 30px;
+          border: 1.5px solid var(--netease-border); background: #fff; color: var(--netease-text);
+          font-size: 14px; cursor: pointer; white-space: nowrap;
+          transition: all 0.15s;
+        }
+        .site-chip:hover { border-color: var(--netease-red); color: var(--netease-red); }
+        .site-chip.active { background: var(--netease-red); border-color: var(--netease-red); color: #fff; }
+        .site-chip .count { font-size: 12px; opacity: 0.75; margin-left: 4px; }
+        
+        .result-container { margin-top: 8px; padding-bottom: 100px; }
+        .video-grid {
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+        }
+        @media (min-width: 600px) { .video-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (min-width: 900px) { .video-grid { grid-template-columns: repeat(5, 1fr); } }
+        
+        .video-card {
+          background: #fff; border-radius: 12px; overflow: hidden;
+          border: 1px solid var(--netease-border); cursor: pointer;
+          transition: transform 0.15s, box-shadow 0.15s;
+          display: flex; flex-direction: column;
+        }
+        .video-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(236,65,65,0.15); border-color: #ffd6d6; }
+        .video-card .poster {
+          width: 100%; aspect-ratio: 2/3; background: #f0f0f0;
+          position: relative; overflow: hidden;
+        }
+        .video-card .poster img {
+          width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+        .video-card .poster .noimg {
+          width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+          color: var(--netease-text-sub); font-size: 12px; background: linear-gradient(135deg, #f5f5f5, #ebebeb);
+        }
+        .video-card .poster .site-badge {
+          position: absolute; top: 6px; left: 6px;
+          background: rgba(236,65,65,0.92); color: #fff;
+          padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;
+          backdrop-filter: blur(4px);
+        }
+        .video-card .meta { padding: 8px 8px 10px; flex: 1; }
+        .video-card .name {
+          font-size: 13px; font-weight: 600; color: var(--netease-text);
+          line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .video-card .src {
+          font-size: 11px; color: var(--netease-text-sub); margin-top: 4px;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        
+        .loading, .empty-result, .error-result {
+          text-align: center; padding: 40px 0; color: var(--netease-text-sub); font-size: 14px;
+        }
+        .error-result { color: var(--netease-red); }
+        
+        .search-progress {
+          text-align: center; padding: 10px 0 6px; color: var(--netease-text-sub); font-size: 13px;
+          display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .spinner {
+          width: 16px; height: 16px; border-radius: 50%;
+          border: 2px solid #f0f0f0; border-top-color: var(--netease-red);
+          animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .toast {
+          position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+          background: var(--netease-text); color: #fff; padding: 10px 24px; border-radius: 30px;
+          font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+          display: none; z-index: 999;
+        }
+        .toast.show { display: block; }
+        
+        .sheet{
+          position:fixed;inset:0;z-index:200;
+          display:none;background:var(--netease-bg);
+          overflow-y:auto;-webkit-overflow-scrolling:touch;
+          transform:translateX(100%);
+          transition:transform .28s cubic-bezier(.4,0,.2,1);
+        }
+        .sheet.active{display:block;transform:translateX(0)}
+        
+        .det-topbar{
+          position:sticky;top:0;z-index:10;
+          height:calc(56px + env(safe-area-inset-top, 0px));
+          padding-top:env(safe-area-inset-top, 0px);
+          padding-left:16px;
+          padding-right:16px;
+          display:flex;align-items:center;gap:10px;
+          background:rgba(255,255,255,.96);
+          backdrop-filter:blur(20px);
+          -webkit-backdrop-filter:blur(20px);
+          border-bottom:1px solid var(--netease-line);
+        }
+        .det-topbar-title{
+          flex:1;min-width:0;
+          font-size:16px;font-weight:700;color:var(--netease-text);
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+        }
+        .det-close-btn{
+          width:36px;height:36px;border-radius:50%;
+          background:#f5f5f5;color:var(--netease-text);
+          border:none;font-size:16px;cursor:pointer;
+          display:flex;align-items:center;justify-content:center;
+          flex-shrink:0;
+        }
+        .det-close-btn:hover{background:#ebebeb;color:var(--netease-red)}
+        .panel{
+          padding: calc(18vh + env(safe-area-inset-top, 0px)) 20px 40px;
+          max-width:900px;margin:0 auto;
+        }
+        .det-bigtitle{
+          font-size:24px;font-weight:800;color:var(--netease-text);
+          margin:8px 0 16px;line-height:1.25;
+          word-break:break-word;
+        }
+        .det-sec-label{
+          font-size:13px;font-weight:700;color:var(--netease-text-sub);
+          margin:16px 0 10px;letter-spacing:.5px;
+          display:flex;align-items:center;gap:10px;
+        }
+        .det-sec-label::after{
+          content:'';flex:1;height:1px;background:var(--netease-line);
+        }
+        .pan-list{display:flex;flex-direction:column;gap:10px}
+        .pan-item{
+          display:flex;align-items:center;gap:12px;
+          padding:14px 18px;border-radius:12px;
+          background:#fff;border:1px solid var(--netease-border);
+          cursor:pointer;transition:all .15s;
+          box-shadow:0 1px 3px rgba(0,0,0,.03);
+        }
+        .pan-item:hover{border-color:var(--netease-red);box-shadow:0 4px 12px rgba(236,65,65,.12)}
+        .pan-type{
+          flex:0 0 auto;padding:4px 10px;border-radius:8px;
+          background:#ffe5e5;color:var(--netease-red);
+          font-size:12px;font-weight:700;
+        }
+        .pan-info{flex:1;min-width:0}
+        .pan-name{
+          font-size:15px;font-weight:600;color:var(--netease-text);
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+        }
+        .pan-url{
+          font-size:12px;color:var(--netease-text-sub);margin-top:3px;
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+        }
+        .pan-open-btn{
+          flex:0 0 auto;
+          padding:8px 16px;border-radius:8px;
+          background:var(--netease-red);color:#fff;
+          font-size:14px;font-weight:600;
+          border:none;cursor:pointer;
+          transition:background 0.15s;
+        }
+        .pan-open-btn:hover{background:var(--netease-red-dark)}
+        .pan-open-btn:active{transform:scale(.95)}
+        .det-loading{
+          padding:60px 0;text-align:center;color:var(--netease-text-sub);font-size:14px;
+          display:flex;flex-direction:column;align-items:center;gap:14px;
+        }
+        .det-spinner{
+          width:32px;height:32px;border-radius:50%;
+          border:3px solid #f0f0f0;border-top-color:var(--netease-red);
+          animation:spin .7s linear infinite;
+        }
+        
+        @media (max-width: 480px) {
+          .header h1 { font-size: 28px; }
+          .search-box { flex-wrap: wrap; }
+          .search-box input { flex: 1 1 100%; }
+          .search-box button { flex: 1; }
+          .app { padding-top: calc(28vh + env(safe-area-inset-top, 0px)); }
+          .video-grid { gap: 8px; }
+          .panel { padding: calc(18vh + env(safe-area-inset-top, 0px)) 14px 40px; }
+          .det-bigtitle { font-size: 20px; }
+          .site-filter { padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px)); }
+          .result-container { padding-bottom: 90px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div class="header">
+            <h1>天扬<span>搜影</span></h1>
+            <div class="sub">纯粹观影，实用才是王道！</div>
+        </div>
+
+        <div class="search-wrapper">
+            <div class="search-box">
+                <input id="searchInput" type="search" placeholder="输入电影或剧集名称...">
+                <button id="searchBtn">搜索</button>
+            </div>
+            <div id="historyDropdown" class="history-dropdown"></div>
+        </div>
+
+        <div id="resultContainer" class="result-container"></div>
+    </div>
+
+    <div id="siteFilter" class="site-filter" style="display:none;"></div>
+
+    <div class="sheet" id="sheet">
+        <div class="det-topbar">
+            <div class="det-topbar-title" id="detTopbarTitle"></div>
+            <button class="det-close-btn" id="detCloseBtn">✕</button>
+        </div>
+        <div class="panel" id="panel"></div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        'use strict';
+        // ============================================================
+        //  天扬搜影 · 影视聚合版（网易云红白配色）
+        //  ★ 站源筛选栏固定在屏幕底部
+        //  ★ 玩偶站源永远排第一位
+        // ============================================================
+        
+        const state = { allItems: [], filterSite: 'all' };
+        let _searchGen = 0;
+        let _currentDetailItem = null;
+        let _currentPlaybackTitle = '';
+        let _searching = false;
+        let _lastSearchKeyword = '';
+        
+        function toast(text){
+          const el=document.getElementById('toast');
+          el.textContent=text; el.classList.add('show');
+          clearTimeout(toast.timer);
+          toast.timer=setTimeout(()=>el.classList.remove('show'),2000);
+        }
+        function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+        function clean(s){return String(s||'').replace(/\s+/g,' ').trim();}
+        
+        let _fmReadyP=null;
+        function fmReady(){
+          if(_fmReadyP)return _fmReadyP;
+          _fmReadyP=new Promise(res=>{
+            if(window.fm&&window.fm.req)return res(window.fm);
+            let t=0;
+            const iv=setInterval(()=>{
+              t+=60;
+              if((window.fm&&window.fm.req)||t>4000){clearInterval(iv);res(window.fm||null);}
+            },60);
+          });
+          return _fmReadyP;
+        }
+        
+        const CORS_PROXIES=[
+          u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),
+          u=>'https://corsproxy.io/?url='+encodeURIComponent(u)
+        ];
+        
+        async function req(url,timeoutSec,quiet){
+          timeoutSec=timeoutSec||16;
+          const fm=await fmReady();
+          if(fm&&fm.req){
+            try{
+              const r=await fm.req(url,{
+                method:'GET',
+                headers:{'User-Agent':'Mozilla/5.0','Referer':url},
+                responseType:'text',
+                timeout:timeoutSec
+              });
+              if(typeof r==='string') return r;
+              if(r&&r.ok)return r.body||'';
+              throw new Error((r&&r.error)||('HTTP '+(r?r.status:'?')));
+            }catch(e){
+              throw new Error(e.message||'原生请求异常');
+            }
+          }
+          try{
+            const ac=new AbortController();
+            const t=setTimeout(()=>ac.abort(),timeoutSec*1000);
+            let r;
+            try{
+              r=await fetch(url,{headers:{'User-Agent':'Mozilla/5.0'},cache:'no-cache',signal:ac.signal});
+            }finally{clearTimeout(t);}
+            return await r.text();
+          }catch(e){
+            let lastErr=e.message;
+            for(const mk of CORS_PROXIES){
+              try{
+                const r=await fetch(mk(url));
+                if(r.ok){const t=await r.text();if(t)return t;}
+                lastErr='HTTP '+r.status;
+              }catch(err){lastErr=err.message;}
+            }
+            throw new Error(lastErr||'请求失败');
+          }
+        }
+        
+        const SITES=[
+          {id:'wanou',name:'玩偶',domains:['https://www.wogg.net','http://woggpan.xxooo.cf','https://wogg.xxooo.cf'],listSelector:'.module-item',searchListSelector:'.module-search-item',searchUrl:'/vodsearch/-------------.html?wd={keyword}&page={page}'},
+          {id:'muou',name:'木偶',domains:['https://www.muou.site','https://www.muou.asia','https://666.666291.xyz'],listSelector:'#main .module-item',searchListSelector:'.module-search-item'},
+          {id:'duoduo',name:'多多',domains:['https://tv.yydsys.cc','https://yydsys.de5.net','https://tv.214521.xyz','https://tv.yydsys.top'],listSelector:'.module-item',searchListSelector:'.module-search-item'},
+          {id:'4kzn',name:'4K指南',domains:['https://4kzn.cc'],listSelector:'.book-card,.book-item,.post-item,.post,.item,.module-item,.post-list-item',searchListSelector:'.book-card,.book-item,.post-item,.post,.item,.module-item,.post-list-item',searchUrl:'/?post_type=book&s={keyword}'},
+          {id:'huban',name:'虎斑',domains:['http://xhban.xyz','http://38.76.197.172:16969'],listSelector:'#main .module-item',searchListSelector:'.module-search-item'},
+          {id:'shandian',name:'闪电',domains:['http://shandian.blog','http://sd.sduc.site'],listSelector:'#main .module-item',searchListSelector:'.module-search-item'}
+        ];
+        
+        const SEARCH_URL_TEMPLATES=[
+          '/index.php/vod/search/page/{p}/wd/{kw}.html',
+          '/vodsearch/-------------.html?wd={kw}&page={p}',
+          '/index.php/vod/search/wd/{kw}.html',
+          '/vodsearch/{kw}----------{p}---.html',
+          '/index.php/vod/search.html?wd={kw}',
+          '/search.html?wd={kw}'
+        ];
+        const SEARCH_URL_CACHE=(()=>{try{return JSON.parse(localStorage.getItem('tianyang_search_url_cache')||'{}')}catch(e){return {}}})();
+        function saveSearchUrlCache(){try{localStorage.setItem('tianyang_search_url_cache',JSON.stringify(SEARCH_URL_CACHE))}catch(e){}}
+        
+        function doc(h){return new DOMParser().parseFromString(h,'text/html')}
+        function imgUrl(u){
+          if(!u)return'';
+          u=u.replace(/^\/\//,'https://');
+          let m=u.match(/^https?:\/\/image\.baidu\.com\/search\/down\?url=([^&]+)/i);
+          return m?decodeURIComponent(m[1]):u;
+        }
+        function abs(base,u){try{return new URL(u,base+'/').href}catch(e){return u||'';}}
+        
+        function cardFrom(el,base,site){
+          let a=el.querySelector('a[href]')||el.closest('a[href]')||el;
+          let href=a.getAttribute('href')||'';
+          let img=el.querySelector('img');
+          let title=a.getAttribute('title')||(img&&img.getAttribute('alt'))||
+            clean((el.querySelector('.module-item-title,.module-search-item-title,.video-title,.title')||{}).textContent)||
+            clean(a.textContent);
+          let pic=imgUrl(img&&(img.getAttribute('data-src')||img.getAttribute('data-original')||img.getAttribute('src'))||'');
+          let remark=clean((el.querySelector('.module-item-note,.module-search-item-note,.video-info,.note')||{}).textContent)||site.name;
+          return{
+            title:title.replace(/\s+/g,' ').slice(0,60),
+            href:abs(base,href),
+            pic:abs(base,pic),
+            remark,
+            siteId:site.id,
+            siteName:site.name
+          };
+        }
+        
+        function _pickSearchEls(d,s){
+          const sels=[s.searchListSelector,'.module-search-item','.module-items .module-item',
+            '.module-list .module-item','.stui-vodlist__media','ul.stui-vodlist > li',
+            '.stui-vodlist li','.search-list li','.vodlist li','.module-item'].filter(Boolean);
+          for(const sel of sels){const els=[...d.querySelectorAll(sel)];if(els.length)return els}
+          return [];
+        }
+        
+        async function get(site,path,timeoutSec,quiet){
+          timeoutSec=timeoutSec||16;
+          if(path.startsWith('http')){
+            let h=await req(path,timeoutSec,quiet);
+            if(!h||/just a moment|cf-browser|access denied/i.test(h))throw new Error('响应被拦截或为空');
+            let base=path;try{const u=new URL(path);base=u.protocol+'//'+u.host}catch(e){}
+            return{html:h,base};
+          }
+          const domains=(site.domains||[]).slice();
+          if(!domains.length)throw new Error('没有可用域名');
+          let lastErr='';
+          for(const d of domains){
+            try{
+              const base=d.replace(/\/+$/,''),u=base+path;
+              const h=await req(u,timeoutSec,quiet);
+              if(h&&!/just a moment|cf-browser|access denied/i.test(h)){
+                return{html:h,base};
+              }
+              lastErr='响应被拦截或无响应';
+            }catch(e){lastErr=e.message||'请求失败';}
+          }
+          throw new Error(lastErr||'全部域名失败');
+        }
+        
+        async function searchSite(s,q,timeoutSec){
+          timeoutSec=timeoutSec||16;
+          const ekw=encodeURIComponent(q);
+          let templates;
+          if(s.searchUrl){
+            templates=[s.searchUrl.replace('{keyword}','{kw}').replace('{page}','{p}')];
+          }else if(SEARCH_URL_CACHE[s.id]){
+            templates=[SEARCH_URL_CACHE[s.id],...SEARCH_URL_TEMPLATES.filter(t=>t!==SEARCH_URL_CACHE[s.id])];
+          }else{
+            templates=SEARCH_URL_TEMPLATES;
+          }
+          let lastErr=null,anyOk=false;
+          for(const tpl of templates){
+            const path=tpl.replace(/\{kw\}/g,ekw).replace(/\{p\}/g,'1');
+            let r;
+            try{r=await get(s,path,timeoutSec,true)}
+            catch(e){lastErr=e;continue}
+            anyOk=true;
+            const d=doc(r.html);
+            const els=_pickSearchEls(d,s);
+            const list=els.map(e=>cardFrom(e,r.base,s)).filter(x=>x.href&&x.title).slice(0,10);
+            if(list.length){
+              if(!s.searchUrl&&SEARCH_URL_CACHE[s.id]!==tpl){SEARCH_URL_CACHE[s.id]=tpl;saveSearchUrlCache();}
+              return list;
+            }
+          }
+          if(!anyOk&&lastErr)throw lastErr;
+          return [];
+        }
+        
+        async function searchAllSites(keyword,onProgress,gen){
+          const map=new Map();
+          let done=0,shown=false;
+          const total=SITES.length;
+          const CONC=5;
+          const jobs=SITES.map(s=>({site:s,q:keyword}));
+          let idx=0;
+        
+          function isStale(){return gen!==_searchGen;}
+          function merge(list){
+            list.forEach(x=>{
+              const key=(x.siteId||'')+'|'+x.href;
+              if(!map.has(key))map.set(key,x);
+            });
+          }
+          function flush(){
+            if(isStale())return;
+            const arr=[...map.values()];
+            if(onProgress)onProgress(arr,done,total);
+          }
+          async function worker(){
+            while(idx<jobs.length){
+              if(isStale())return;
+              const job=jobs[idx++];
+              try{
+                const list=await searchSite(job.site,job.q,16);
+                if(isStale())return;
+                merge(list);
+              }catch(e){}
+              if(isStale())return;
+              done++;
+              if(!shown&&map.size>0){shown=true;flush();}
+              else if(shown&&done%2===0)flush();
+            }
+          }
+          await Promise.all(Array.from({length:Math.min(CONC,jobs.length)},worker));
+          if(isStale())return [];
+          flush();
+          return [...map.values()];
+        }
+        
+        function getHistory(){try{return JSON.parse(localStorage.getItem('tianyang_search_history'))||[]}catch{return[]}}
+        function saveHistory(l){localStorage.setItem('tianyang_search_history',JSON.stringify(l));}
+        function addHistory(kw){
+          kw=kw.trim();if(!kw)return;
+          let list=getHistory().filter(i=>i!==kw);
+          list.unshift(kw);if(list.length>20)list=list.slice(0,20);
+          saveHistory(list);renderHistoryDropdown();
+        }
+        function removeHistory(kw){saveHistory(getHistory().filter(i=>i!==kw));renderHistoryDropdown();}
+        function clearAllHistory(){saveHistory([]);renderHistoryDropdown();toast('已清除全部历史');}
+        
+        function renderHistoryDropdown(){
+          const list=getHistory();
+          const c=document.getElementById('historyDropdown');
+          if(!list.length){c.innerHTML='<div class="empty-history">暂无搜索记录</div>';return;}
+          let html='';
+          list.forEach(kw=>{
+            html+=`<div class="history-item" data-keyword="${escapeHtml(kw)}"><span>${escapeHtml(kw)}</span><button class="del-btn" data-keyword="${escapeHtml(kw)}">✕</button></div>`;
+          });
+          html+='<button class="clear-history-btn">清除全部历史</button>';
+          c.innerHTML=html;
+          c.querySelectorAll('.history-item[data-keyword]').forEach(it=>{
+            it.addEventListener('mousedown',(e)=>{
+              e.preventDefault();
+              if(e.target.classList.contains('del-btn'))return;
+              const kw=it.dataset.keyword;
+              document.getElementById('searchInput').value=kw;
+              document.getElementById('historyDropdown').classList.remove('active');
+              doSearch(kw);
+            });
+          });
+          c.querySelectorAll('.del-btn').forEach(b=>{
+            b.addEventListener('mousedown',(e)=>{e.stopPropagation();e.preventDefault();removeHistory(b.dataset.keyword);});
+          });
+          c.querySelector('.clear-history-btn').addEventListener('mousedown',(e)=>{e.preventDefault();clearAllHistory();});
+        }
+        
+        function renderSiteFilter(items){
+          const box=document.getElementById('siteFilter');
+          if(!items||!items.length){box.style.display='none';return;}
+          const groups={};
+          items.forEach(it=>{
+            const k=it.siteId;
+            if(!groups[k])groups[k]={name:it.siteName,count:0};
+            groups[k].count++;
+          });
+          const sites=Object.keys(groups);
+          // ★ 站源排序：玩偶永远第一位
+          sites.sort((a,b)=>{
+            if(a==='wanou')return -1;
+            if(b==='wanou')return 1;
+            return 0;
+          });
+          if(sites.length<=1){box.style.display='none';return;}
+        
+          let html=`<button class="site-chip ${state.filterSite==='all'?'active':''}" data-site="all">全部 <span class="count">(${items.length})</span></button>`;
+          sites.forEach(k=>{
+            const g=groups[k];
+            html+=`<button class="site-chip ${state.filterSite===k?'active':''}" data-site="${escapeHtml(k)}">${escapeHtml(g.name)} <span class="count">(${g.count})</span></button>`;
+          });
+          box.innerHTML=html;
+          box.style.display='flex';
+          box.querySelectorAll('.site-chip').forEach(chip=>{
+            chip.onclick=()=>{
+              state.filterSite=chip.dataset.site;
+              box.querySelectorAll('.site-chip').forEach(c=>c.classList.remove('active'));
+              chip.classList.add('active');
+              renderVideoGrid();
+            };
+          });
+        }
+        
+        function renderVideoGrid(){
+          const c=document.getElementById('resultContainer');
+          let items=state.allItems;
+          if(state.filterSite&&state.filterSite!=='all'){
+            items=items.filter(i=>i.siteId===state.filterSite);
+          }
+          if(!items.length){
+            c.innerHTML='<div class="empty-result">暂无结果</div>';
+            return;
+          }
+          c.innerHTML=`<div class="video-grid">${items.map((v,i)=>`
+            <div class="video-card" data-i="${i}">
+              <div class="poster">
+                ${v.pic?`<img src="${escapeHtml(v.pic)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.style.display='none';this.parentNode.querySelector('.noimg').style.display='flex'">`:''}
+                <div class="noimg" style="${v.pic?'display:none':''}">无图</div>
+                <span class="site-badge">${escapeHtml(v.siteName)}</span>
+              </div>
+              <div class="meta">
+                <div class="name">${escapeHtml(v.title)}</div>
+                <div class="src">${escapeHtml(v.remark||'')}</div>
+              </div>
+            </div>`).join('')}</div>`;
+          c.querySelectorAll('.video-card').forEach(el=>{
+            el.onclick=()=>{
+              const item=items[parseInt(el.dataset.i)];
+              openDetail(item);
+            };
+          });
+        }
+        
+        function openDetail(v){
+          if(!v||!v.href)return toast('链接无效');
+          _currentDetailItem=v;
+          _currentPlaybackTitle=v.title||'';
+        
+          if(location.hash !== '#detail'){
+            history.pushState({wo:'detail'}, '', '#detail');
+          }
+        
+          const sheet=document.getElementById('sheet');
+          const panel=document.getElementById('panel');
+          const topbarTitle=document.getElementById('detTopbarTitle');
+        
+          topbarTitle.textContent=v.title||'';
+          sheet.classList.add('active');
+          sheet.scrollTop=0;
+          document.body.style.overflow='hidden';
+        
+          panel.innerHTML='<div class="det-loading"><div class="det-spinner"></div><span>读取详情…</span></div>';
+        
+          parseDetail(v).then(d=>{
+            const info=d.info||{};
+            const title=info.title||v.title||'';
+            _currentPlaybackTitle=title;
+            topbarTitle.textContent=title;
+        
+            const panRank={'夸克':0,'百度':1,'UC':2,'阿里':3,'123':4,'115':5,'迅雷':6,'天翼':7,'移动':8,'光鸭':9};
+            d.pans.sort((a,b)=>{
+              const ra=panRank[a.type]??99;
+              const rb=panRank[b.type]??99;
+              return ra-rb;
+            });
+        
+            panel.innerHTML=`
+              <div class="det-bigtitle">${escapeHtml(title)}</div>
+              <div class="det-sec-label">网盘资源（${d.pans.length}）</div>
+              <div class="pan-list">
+                ${d.pans.map((p,i)=>`
+                  <div class="pan-item" data-i="${i}">
+                    <span class="pan-type">${escapeHtml(p.type)}</span>
+                    <div class="pan-info">
+                      <div class="pan-name">${escapeHtml((p.type||'')+'网盘 '+(p.name&&p.name!=='打开'?p.name:''))}</div>
+                      <div class="pan-url">${escapeHtml(p.url)}</div>
+                    </div>
+                    <button class="pan-open-btn" data-i="${i}">播放</button>
+                  </div>`).join('')||'<div class="empty-result">未提取到网盘链接</div>'}
+              </div>`;
+        
+            panel.querySelectorAll('.pan-item').forEach(item=>{
+              item.onclick=(e)=>{
+                if(e.target.closest('.pan-open-btn'))return;
+                const i=parseInt(item.dataset.i);
+                playPan(d.pans[i]);
+              };
+            });
+            panel.querySelectorAll('.pan-open-btn').forEach(btn=>{
+              btn.onclick=(e)=>{
+                e.stopPropagation();
+                const i=parseInt(btn.dataset.i);
+                playPan(d.pans[i]);
+              };
+            });
+          }).catch(e=>{
+            panel.innerHTML=`<div class="det-loading"><div>详情失败：${escapeHtml(e.message||'')}</div></div>`;
+          });
+        }
+        
+        function closeDetail(){
+          if(location.hash === '#detail'){
+            history.back();
+          }else{
+            _doCloseDetail();
+          }
+        }
+        
+        function _doCloseDetail(){
+          const sheet=document.getElementById('sheet');
+          if(!sheet.classList.contains('active'))return;
+          sheet.classList.remove('active');
+          document.body.style.overflow='';
+          _currentDetailItem=null;
+          if(location.hash === '#detail'){
+            history.replaceState({}, '', location.pathname + location.search);
+          }
+        }
+        
+        async function parseDetail(v){
+          const sources=v.sources||[v];
+          const results=await Promise.all(sources.slice(0,10).map(async src=>{
+            const s=SITES.find(x=>x.id===src.siteId)||SITES[0];
+            try{
+              let path=src.href;
+              try{
+                const u=new URL(src.href);
+                const isThisSite=(s.domains||[]).some(d=>src.href.startsWith(d));
+                if(isThisSite)path=u.pathname+u.search;
+              }catch(e){}
+        
+              const r=await get(s,path,16);
+              const html=r.html||'';
+              const base=r.base||'';
+              const d=doc(html);
+        
+              let title=clean((d.querySelector('h1,.title,.module-info-heading h1')||{}).textContent)||src.title;
+              let pic='';
+              const picEl=d.querySelector('.module-info-poster img,.detail-pic img,img');
+              if(picEl)pic=imgUrl(picEl.getAttribute('data-src')||picEl.getAttribute('src')||'');
+              let desc=clean((d.querySelector('.module-info-introduction,.desc,.module-info-content')||{}).textContent)||'';
+        
+              const pans=[];
+              const seen=new Set();
+        
+              [...d.querySelectorAll('a[href]')].forEach(a=>{
+                let u=a.getAttribute('href')||'';
+                if(/pan\.baidu|quark|aliyun|alipan|xunlei|115\.com|115cdn|123(?:\d{2,4})?\.(?:com|cn|net)|123pan\.(?:com|cn)|cloud\.189|caiyun|drive\.uc\.cn|magnet:/i.test(u)){
+                  const full=abs(base,u);
+                  if(!seen.has(full)){seen.add(full);pans.push({name:clean(a.textContent)||title,url:full,type:panType(full)});}
+                }
+              });
+        
+              const RAW=html.replace(/\\\//g,'/');
+              const PAN_RE=/https?:\/\/(?:[\w.-]*\.)?(?:pan\.baidu\.com|pan\.quark\.cn|drive\.uc\.cn|aliyundrive\.com|alipan\.com|aliyunpan\.com|cloud\.189\.cn|115\.com|115cdn\.[a-z0-9]+|123[a-z0-9]*\.(?:com|cn|net)|caiyun\.139\.com|pan\.xunlei\.com|mypikpak\.com|lanzou[a-z]*\.[a-z]+|feijipan\.com|guangya[a-z0-9.-]*\.[a-z]+|f\.ws[a-z0-9.]+)\/[A-Za-z0-9\-_/?=&%.#~+]*/gi;
+              let mm;
+              while((mm=PAN_RE.exec(RAW))){
+                let u=mm[0].replace(/&amp;/g,'&').replace(/[，。、）)]+$/,'');
+                if(!seen.has(u)){seen.add(u);pans.push({name:title,url:u,type:panType(u)});}
+              }
+        
+              return{info:{title,pic:abs(base,pic),desc,siteName:src.siteName},pans};
+            }catch(e){return null}
+          }));
+        
+          let main=(results.find(x=>x)||{}).info||v;
+          let all=results.filter(x=>x).flatMap(x=>x.pans);
+        
+          let seen=new Set();
+          all=all.filter(x=>x.url&&!seen.has(x.url)&&(seen.add(x.url)||true));
+        
+          return{info:main,pans:all};
+        }
+        
+        function panType(u){
+          u=String(u||'').toLowerCase();
+          if(u.includes('pan.baidu'))return'百度';
+          if(u.includes('quark'))return'夸克';
+          if(u.includes('aliyun')||u.includes('alipan'))return'阿里';
+          if(u.includes('xunlei'))return'迅雷';
+          if(u.includes('guangya')||u.includes('光鸭')||/gy[a-z0-9.-]*\./.test(u))return'光鸭';
+          if(u.includes('115.com')||u.includes('115cdn'))return'115';
+          if(/123(?:\d{2,4})?\.(?:com|cn|net)|123pan\.(?:com|cn)/.test(u))return'123';
+          if(u.includes('cloud.189'))return'天翼';
+          if(u.includes('caiyun')||u.includes('139'))return'移动';
+          if(u.includes('drive.uc.cn')||u.includes('uc123')||/(?:^|[.\/])uc\.cn/.test(u))return'UC';
+          return'网盘';
+        }
+        
+        async function playPan(p){
+          if(!p||!p.url)return toast('资源无效');
+        
+          const playbackTitle=_currentPlaybackTitle||(_currentDetailItem&&_currentDetailItem.title)||p.name||p.title||'';
+          const fm=await fmReady();
+        
+          if(fm&&fm.pan&&fm.pan.play){
+            try{
+              await fm.pan.play({
+                type:p.type||'',
+                url:p.url,
+                password:p.password||'',
+                title:playbackTitle
+              });
+              return;
+            }catch(e){}
+          }
+          if(fm&&fm.play){
+            try{
+              await fm.play(p.url.startsWith('magnet:')?p.url:'push://'+p.url,playbackTitle);
+              return;
+            }catch(e){}
+          }
+          location.href=p.url;
+        }
+        
+        async function doSearch(keyword){
+          if(_searching){
+            toast('正在搜索中，请稍候…');
+            return;
+          }
+        
+          document.getElementById('historyDropdown').classList.remove('active');
+          keyword=keyword.trim();
+          if(!keyword)return toast('请输入片名');
+        
+          addHistory(keyword);
+        
+          const gen=++_searchGen;
+          _searching=true;
+          _lastSearchKeyword=keyword;
+        
+          const btn=document.getElementById('searchBtn');
+          if(btn){btn.disabled=true;btn.textContent='搜索中…';}
+        
+          const c=document.getElementById('resultContainer');
+          document.getElementById('siteFilter').style.display='none';
+          c.innerHTML='<div class="search-progress"><div class="spinner"></div>正在搜索影视源…</div>';
+        
+          state.allItems=[];
+          state.filterSite='all';
+        
+          try{
+            const items=await searchAllSites(keyword,(arr,done,total)=>{
+              if(gen!==_searchGen)return;
+              state.allItems=arr;
+              if(arr.length){
+                renderSiteFilter(arr);
+                renderVideoGrid();
+                const tip=document.querySelector('.search-progress');
+                if(tip)tip.innerHTML=`<div class="spinner"></div>已找到 ${arr.length} 条，正在搜索剩余站源…（${done}/${total}）`;
+              }
+            },gen);
+        
+            if(gen!==_searchGen)return;
+        
+            state.allItems=items;
+            if(!items.length){
+              c.innerHTML='<div class="empty-result">未找到相关影视资源</div>';
+            }else{
+              renderSiteFilter(items);
+              renderVideoGrid();
+            }
+          }catch(e){
+            if(gen!==_searchGen)return;
+            c.innerHTML=`<div class="error-result">搜索失败：${escapeHtml(e.message||'未知错误')}</div>`;
+          }finally{
+            _searching=false;
+            if(btn){btn.disabled=false;btn.textContent='搜索';}
+          }
+        }
+        
+        document.addEventListener('DOMContentLoaded',()=>{
+          const input=document.getElementById('searchInput');
+          const btn=document.getElementById('searchBtn');
+          const dropdown=document.getElementById('historyDropdown');
+          let blurTimer=null;
+        
+          renderHistoryDropdown();
+        
+          input.addEventListener('focus',()=>{clearTimeout(blurTimer);dropdown.classList.add('active');renderHistoryDropdown();});
+          input.addEventListener('blur',()=>{clearTimeout(blurTimer);blurTimer=setTimeout(()=>dropdown.classList.remove('active'),180);});
+          btn.addEventListener('click',()=>doSearch(input.value));
+          input.addEventListener('keydown',(e)=>{if(e.key==='Enter'){e.preventDefault();doSearch(input.value);}});
+        
+          document.getElementById('detCloseBtn').onclick=closeDetail;
+          document.getElementById('sheet').addEventListener('click',(e)=>{
+            if(e.target.id==='sheet')closeDetail();
+          });
+        
+          window.addEventListener('popstate', function(e){
+            const sheet=document.getElementById('sheet');
+            if(sheet && sheet.classList.contains('active')){
+              _doCloseDetail();
+              return;
+            }
+            if(location.hash === '#detail'){
+              history.replaceState({}, '', location.pathname + location.search);
+            }
+          });
+        
+          const params=new URLSearchParams(location.search);
+          const q=params.get('q');
+          if(q){input.value=q;doSearch(q);}
+        });
+    </script>
+</body>
+
+</html>

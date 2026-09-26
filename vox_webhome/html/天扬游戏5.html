@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>天扬 · 经典游戏合集</title>
+    <!-- ======================= 兼容性引导(ES5, 最先执行) ======================= -->
+    <script>
+        (function(){
+          var d = document.documentElement;
+          d.className = d.className ? d.className + ' ' : '';
+          d.className += 'fm-native';
+          d.className += ' ' + (CSS && typeof CSS.supports === 'function' ? '' : 'no-css-functions no-layout-gap no-aspect-ratio');
+          if (window.Element) {
+            if (!Element.prototype.closest) {
+              Element.prototype.closest = function(s){ var n=this; while(n){ if(n.matches && n.matches(s)) return n; n=n.parentNode; } return null; };
+            }
+            if (!Element.prototype.replaceChildren) {
+              Element.prototype.replaceChildren = function(){ while(this.firstChild) this.removeChild(this.firstChild); for(var i=0;i<arguments.length;i++){ var a=arguments[i]; this.appendChild(typeof a==='string'?document.createTextNode(a):a); } };
+            }
+          }
+          if (typeof window.globalThis === 'undefined') { try { window.globalThis = window; } catch(e){} }
+        })();
+    </script>
+    <style>
+        /* ========== 网易云红白配色主题 ========== */
+        :root{
+          color-scheme: light;
+          --bg: #ffffff;
+          --bg-soft: #fafafa;
+          --panel-rgb: 255,255,255;
+          --panel: rgba(var(--panel-rgb), 0.96);
+          --panel-soft: rgba(var(--panel-rgb), 0.88);
+          --panel-strong: #ffffff;
+          --line: #e5e5e5;
+          --line-soft: #f0f0f0;
+          --line-strong: #d9d9d9;
+          --ink: #2b2b2b;
+          --ink-soft: #4a4a4a;
+          --ink-faint: #8c8c8c;
+          --gold: #ec4141;
+          --gold-lite: #ff6b6b;
+          --gold-rgb: 236,65,65;
+          --cyan: #ec4141;
+          --green: #ec4141;
+          --red-bg: rgba(236,65,65,0.06);
+          --red-bg-mid: rgba(236,65,65,0.12);
+          --red-bg-strong: rgba(236,65,65,0.18);
+          --shadow-sm: 0 1px 4px rgba(0,0,0,0.04);
+          --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+          --shadow-lg: 0 8px 24px rgba(236,65,65,0.10);
+          --safe-top: var(--fm-safe-top,0px);
+          --safe-bottom: var(--fm-safe-bottom,0px);
+          --safe-left: var(--fm-safe-left,0px);
+          --safe-right: var(--fm-safe-right,0px);
+          --gut: 12px; --maxw: 1180px;
+          --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+        }
+        *{box-sizing:border-box;}
+        html,body{margin:0;min-height:100%;}
+        html{height:auto;}
+        body{
+          min-height:100vh; height:auto; color:var(--ink);
+          font-family:"PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+          background: var(--bg);
+          background-image:
+            radial-gradient(ellipse at 20% 0%, rgba(236,65,65,0.04) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 0%, rgba(236,65,65,0.03) 0%, transparent 45%);
+          background-attachment:scroll;
+        }
+        a{color:inherit;text-decoration:none;}
+        button,input{font:inherit;}
+        .app{
+          position:relative; z-index:1; width:100%; max-width:var(--maxw);
+          margin:0 auto; padding:0 var(--gut) calc(var(--safe-bottom) + 18px);
+          padding-left:calc(var(--safe-left) + var(--gut));
+          padding-right:calc(var(--safe-right) + var(--gut));
+        }
+        /* ===== 顶栏: 白底 + 细红线,可自动隐藏 ===== */
+        .topbar{
+          position:fixed; top:0; left:0; right:0; z-index:20;
+          margin:0 auto;
+          max-width:var(--maxw);
+          padding:calc(var(--safe-top) + 10px) var(--gut) 8px;
+          background: linear-gradient(to bottom, #ffffff 0%, #ffffff 92%, rgba(255,255,255,0.96) 100%);
+          box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+          transform: translateY(0);
+          transition: transform .25s ease;
+          will-change: transform;
+        }
+        .topbar.topbar-hidden{
+          transform: translateY(calc(-100% - 2px));
+        }
+        .topbar::after{
+          content:""; position:absolute; left:0; right:0; bottom:0; height:2px;
+          background: linear-gradient(90deg, transparent 2%, var(--gold) 20%, var(--gold-lite) 50%, var(--gold) 80%, transparent 98%);
+          box-shadow: 0 0 6px rgba(var(--gold-rgb),0.35);
+        }
+        .topbar-spacer{
+          width:100%; height:0;
+          transition: height .2s ease;
+        }
+        /* 标题行: 只保留标题 + TYGAME */
+        .title-row{display:flex; align-items:center; justify-content:space-between; gap:12px; min-width:0; margin-bottom:6px;}
+        .brand-block{flex:1 1 auto; min-width:0; display:block; padding:0;}
+        h1{
+          font-size:clamp(18px,2.8vw,24px); line-height:1.15; margin:0; letter-spacing:.3px;
+          color: #1a1a1a;
+          background: linear-gradient(135deg, #222222 0%, #ec4141 60%, #ff6b6b 100%);
+          -webkit-background-clip: text; background-clip: text;
+          -webkit-text-fill-color: transparent;
+          font-weight: 700;
+        }
+        /* TYGAME 按钮 */
+        .tygame-badge{
+          flex:0 0 auto; align-self:center; margin-left:auto; min-width:82px; min-height:32px;
+          display:inline-flex; align-items:center; justify-content:center; padding:4px 12px;
+          border:1px solid var(--gold);
+          background: #ec4141;
+          color: #ffffff;
+          font-family:var(--mono); font-size:11px; letter-spacing:1px; cursor:pointer; user-select:none; white-space:nowrap;
+          box-shadow: 0 2px 6px rgba(236,65,65,0.22);
+          transition: all .18s ease;
+          border-radius: 4px;
+        }
+        .tygame-badge:hover{
+          background: #d63a3a;
+          box-shadow: 0 3px 10px rgba(236,65,65,0.32);
+          transform: translateY(-1px);
+        }
+        /* ===== 工具栏 ===== */
+        .toolbar{position:relative; z-index:3; margin-bottom:2px; padding:0;}
+        .search{display:flex; align-items:center; gap:6px; margin-top:6px; position:relative;}
+        .search input{
+          flex:1; min-width:0; height:34px; padding:0 10px;
+          color:var(--ink); background: #f7f7f7;
+          border:1px solid var(--line); border-radius: 6px;
+          outline:none; font-size:13px; transition: border-color .2s, box-shadow .2s;
+        }
+        .search input::placeholder{ color:#b5b5b5; font-size:12px; }
+        .search input:focus{
+          border-color: var(--gold);
+          box-shadow: 0 0 0 2px rgba(236,65,65,0.08);
+          background: #ffffff;
+        }
+        .search button{
+          flex:0 0 auto; height:34px; padding:0 12px;
+          border:1px solid var(--gold);
+          background: #ec4141; color: #ffffff;
+          cursor:pointer; font-weight:600; font-size:12px; letter-spacing:.3px;
+          border-radius: 6px; transition: all .18s ease;
+        }
+        .search button:hover{ background: #d63a3a; box-shadow: 0 2px 6px rgba(236,65,65,0.22); }
+        #resetBtn{ background: #ffffff; color: var(--gold); border-color: var(--line-strong); }
+        #resetBtn:hover{ background: var(--red-bg); border-color: var(--gold); }
+        .status-summary{margin-top:5px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+        .status{color:var(--ink-soft); font-size:11px; letter-spacing:.3px;}
+        .status.strong{color:var(--gold); font-weight: 500;}
+        /* ===== 主分类 tabs ===== */
+        .tabs{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; padding:0;}
+        .tab-btn{
+          flex:0 0 auto; padding:5px 12px;
+          background: #f7f7f7; border:1px solid var(--line);
+          color: var(--ink-soft); cursor:pointer; font-size:12px;
+          user-select:none; white-space:nowrap;
+          border-radius: 16px; transition: all .18s ease;
+          font-weight: 500;
+        }
+        .tab-btn:hover{ border-color: var(--gold); color: var(--gold); background: var(--red-bg); }
+        .tab-btn.active{
+          border-color: var(--gold); color: #ffffff;
+          background: #ec4141; font-weight:600;
+          box-shadow: 0 2px 6px rgba(236,65,65,0.18);
+        }
+        /* ===== 子分类筛选 chips ===== */
+        .sub-filter{display:flex; flex-wrap:wrap; gap:4px; margin-top:5px; padding:0;}
+        .filter-btn{
+          flex:0 0 auto; padding:3px 9px;
+          border:1px solid var(--line); background: #f7f7f7;
+          color: var(--ink-faint); cursor:pointer; font-size:11px;
+          user-select:none; white-space:nowrap;
+          border-radius: 12px; transition: all .18s ease;
+        }
+        .filter-btn:hover{ border-color: var(--gold); color: var(--gold); background: var(--red-bg); }
+        .filter-btn.active{
+          border-color: var(--gold); color: #ffffff;
+          background: #ec4141; font-weight:600;
+          box-shadow: 0 1px 4px rgba(236,65,65,0.16);
+        }
+        /* ===== 游戏网格: 每行固定3个 ===== */
+        #content{
+          display:grid;
+          grid-template-columns:repeat(3, 1fr);
+          gap:8px;
+          margin-top:10px;
+        }
+        .game-card{
+          display:flex; flex-direction:column; min-width:0;
+          border:1px solid var(--line);
+          background: var(--panel); overflow:hidden; cursor:pointer;
+          transition: border-color .18s, transform .18s, box-shadow .18s;
+          border-radius: 8px;
+          box-shadow: var(--shadow-sm);
+        }
+        .game-card:hover{
+          border-color: var(--gold);
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-lg);
+        }
+        .game-cover{
+          display:block; width:100%;
+          aspect-ratio:4/3;
+          overflow:hidden; background: #f7f7f7;
+        }
+        .game-cover img{width:100%; height:100%; object-fit:cover; display:block; transition: transform .3s ease;}
+        .game-card:hover .game-cover img{ transform: scale(1.03); }
+        .no-aspect-ratio .game-cover{height:100px;}
+        .game-info{display:block; padding:5px 5px 7px; background:#ffffff;}
+        .game-title{
+          display:block; font-size:11px; line-height:1.3; font-weight:600;
+          color: var(--ink); text-align:center;
+          white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        .game-tags{
+          display:flex; flex-wrap:wrap; justify-content:center;
+          gap:2px; margin-top:3px; min-height:0;
+        }
+        .game-tag{
+          display:inline-block; font-size:8px; line-height:1.4;
+          color: var(--gold); border:1px solid var(--red-bg-strong);
+          background: var(--red-bg); padding:0 3px;
+          white-space:nowrap; max-width:100%;
+          border-radius: 6px;
+        }
+        /* ===== 空状态 ===== */
+        .empty{
+          color: var(--ink-faint); font-size:13px; text-align:center;
+          padding:48px 8px; grid-column:1/-1; line-height:1.9;
+          background: #fafafa; border-radius: 12px;
+          border: 1px dashed var(--line);
+        }
+        .empty .t1{
+          display:block; font-size:19px; font-weight:700;
+          color: var(--gold); letter-spacing:1.5px; margin-bottom:8px;
+        }
+        .empty .t2{display:block; color: var(--ink-faint); font-size:13px; letter-spacing:.5px;}
+        
+        /* ===== 回顶部按钮 ===== */
+        .back-top{
+          position:fixed;
+          right: 14px;
+          bottom: calc(var(--safe-bottom) + 16px);
+          z-index: 30;
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          border: 1px solid var(--gold);
+          background: #ec4141;
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 20px;
+          line-height: 1;
+          box-shadow: 0 4px 14px rgba(236,65,65,0.32);
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(12px);
+          transition: opacity .25s ease, transform .25s ease, visibility .25s;
+          user-select: none;
+          padding: 0;
+        }
+        .back-top.show{
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+        .back-top:hover{
+          background: #d63a3a;
+          box-shadow: 0 6px 20px rgba(236,65,65,0.42);
+          transform: translateY(-2px);
+        }
+        .back-top:active{ transform: translateY(0); }
+        .back-top svg{ display:block; }
+        
+        /* ===== 响应式 ===== */
+        @media (max-width:600px){
+          .title-row{flex-direction:row; align-items:center; gap:8px;}
+          .tygame-badge{
+            min-width:0; min-height:30px; width:auto; padding:4px 10px;
+            font-size:10px; align-self:center; margin-left:auto; flex:0 0 auto;
+          }
+          h1{font-size:17px;}
+          #content{ grid-template-columns:repeat(3, 1fr); gap:6px; }
+          .game-info{padding:4px 3px 6px;}
+          .game-title{font-size:10px;}
+          .game-tag{font-size:7px; padding:0 2px;}
+          .search input{height:32px; font-size:12px;}
+          .search button{height:32px; padding:0 10px; font-size:11px;}
+          .tab-btn{padding:4px 10px; font-size:11px;}
+          .filter-btn{padding:3px 8px; font-size:10px;}
+          .back-top{ width: 40px; height: 40px; right: 10px; bottom: calc(var(--safe-bottom) + 12px); font-size: 18px; }
+        }
+        .no-layout-gap #content{gap:0;}
+        .no-layout-gap #content > .game-card{margin-bottom:8px; margin-right:8px;}
+        .no-layout-gap .game-tags{gap:0;}
+        .no-layout-gap .game-tag{margin:0 2px 2px 0;}
+    </style>
+</head>
+
+<body>
+    <main class="app">
+        <header class="topbar" id="topbar">
+            <div class="title-row">
+                <div class="brand-block">
+                    <h1>天扬 · 经典游戏合集</h1>
+                </div>
+                <div class="tygame-badge" id="tygameToggle" role="button" tabindex="0" aria-expanded="false">TYGAME</div>
+            </div>
+            <section class="toolbar">
+                <div class="search">
+                    <input id="keyword" type="search" placeholder="搜索游戏名,如:魂斗罗 / 拳皇" />
+                    <button id="searchBtn" type="button">搜索</button>
+                    <button id="resetBtn" type="button">返回</button>
+                </div>
+                <div class="status-summary"><span id="status" class="status">就绪 · 选择一个分类或输入关键词开始</span></div>
+                <div class="tabs" id="tabContainer"></div>
+                <div class="sub-filter" id="filterContainer"></div>
+            </section>
+        </header>
+        <div class="topbar-spacer" id="topbarSpacer"></div>
+        <section id="content">
+            <div class="empty"><span class="t1">🎮 经典游戏在线畅玩</span><span class="t2">选择分类或搜索游戏,找回童年的快乐</span></div>
+        </section>
+    </main>
+
+    <!-- 回顶部按钮 -->
+    <button class="back-top" id="backTop" aria-label="回到顶部" type="button">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 14 12 8 18 14"></polyline>
+        </svg>
+    </button>
+
+    <script>
+        (function(){
+        'use strict';
+        var BASE='https://www.yikm.net';
+        /* 分类顺序：街机在最前 */
+        var classes=[
+          { type_id: '/nes?tag=9&e=&page=', type_name: '街机' },
+          { type_id: '/nes?tag=0&e=0&page=', type_name: 'FC' },
+          { type_id: '/nes?tag=&e=5&page=', type_name: 'SFC' },
+          { type_id: '/nes?tag=&e=2&page=', type_name: 'GBA' },
+          { type_id: '/nes?tag=&e=7&page=', type_name: 'NDS' },
+          { type_id: '/nes?tag=&e=3&page=', type_name: 'MD' },
+          { type_id: '/nes?tag=&e=6&page=', type_name: 'DOS' }
+        ];
+        var filters={
+          "/nes?tag=0&e=0&page=": [ { key:'class', name:'分类', value:[
+            {"n":"FC高清","v":"/nes?tag=&e=4&page="},{"n":"动作冒险","v":"/nes?tag=2&e=0&page="},{"n":"小游戏","v":"/nes?tag=8&e=0&page="},
+            {"n":"飞行射击","v":"/nes?tag=3&e=0&page="},{"n":"格斗","v":"/nes?tag=4&e=0&page="},{"n":"棋牌","v":"/nes?tag=5&e=0&page="},
+            {"n":"射击","v":"/nes?tag=6&e=0&page="},{"n":"运动比赛","v":"/nes?tag=7&e=0&page="},{"n":"角色扮演","v":"/nes?tag=10&e=0&page="}
+          ]}],
+          "/nes?tag=&e=5&page=": [ { key:'class', name:'分类', value:[
+            {"n":"汉化","v":"/nes?tag=汉化&e=5&page="},{"n":"平台","v":"/nes?tag=平台&e=5&page="},{"n":"策略","v":"/nes?tag=策略&e=5&page="},
+            {"n":"混合","v":"/nes?tag=混合&e=5&page="},{"n":"动作","v":"/nes?tag=动作&e=5&page="},{"n":"角色扮演","v":"/nes?tag=角色扮演&e=5&page="},
+            {"n":"射击","v":"/nes?tag=射击&e=5&page="},{"n":"运动","v":"/nes?tag=运动&e=5&page="},{"n":"格斗","v":"/nes?tag=格斗&e=5&page="},
+            {"n":"休闲","v":"/nes?tag=休闲&e=5&page="},{"n":"冒险","v":"/nes?tag=冒险&e=5&page="},{"n":"教育","v":"/nes?tag=教育&e=5&page="},
+            {"n":"赛车","v":"/nes?tag=赛车&e=5&page="},{"n":"模拟","v":"/nes?tag=模拟&e=5&page="},{"n":"其他","v":"/nes?tag=其他&e=5&page="}
+          ]}],
+          "/nes?tag=9&e=&page=": [ { key:'class', name:'分类', value:[
+            {"n":"动作冒险","v":"/nes?tag=动作&e=1&page="},{"n":"射击","v":"/nes?tag=射击&e=1&page="},{"n":"赛车","v":"/nes?tag=赛车&e=1&page="},
+            {"n":"格斗","v":"/nes?tag=格斗&e=1&page="},{"n":"体育","v":"/nes?tag=体育&e=1&page="},{"n":"益智游戏","v":"/nes?tag=益智&e=1&page="},
+            {"n":"其他","v":"/nes?tag=其他&e=1&page="}
+          ]}],
+          "/nes?tag=&e=2&page=": [ { key:'class', name:'分类', value:[
+            {"n":"动作","v":"/nes?tag=动作&e=2&page="},{"n":"冒险","v":"/nes?tag=冒险&e=2&page="},{"n":"角色扮演","v":"/nes?tag=角色扮演&e=2&page="},
+            {"n":"运动","v":"/nes?tag=运动&e=2&page="},{"n":"策略","v":"/nes?tag=策略&e=2&page="},{"n":"格斗","v":"/nes?tag=格斗&e=2&page="},
+            {"n":"射击","v":"/nes?tag=射击&e=2&page="},{"n":"赛车","v":"/nes?tag=赛车&e=2&page="},{"n":"体育","v":"/nes?tag=体育&e=2&page="},
+            {"n":"益智游戏","v":"/nes?tag=益智&e=2&page="},{"n":"模拟","v":"/nes?tag=模拟&e=2&page="}
+          ]}],
+          "/nes?tag=&e=7&page=": [ { key:'class', name:'分类', value:[
+            {"n":"角色扮演","v":"/nes?tag=角色扮演&e=7&page="},{"n":"动作角色扮演","v":"/nes?tag=动作角色扮演&e=7&page="},{"n":"模拟角色扮演","v":"/nes?tag=模拟角色扮演&e=7&page="},
+            {"n":"动作游戏","v":"/nes?tag=动作游戏&e=7&page="},{"n":"冒险游戏","v":"/nes?tag=冒险游戏&e=7&page="},{"n":"冒险解谜","v":"/nes?tag=冒险解谜&e=7&page="},
+            {"n":"策略战棋","v":"/nes?tag=策略战棋&e=7&page="},{"n":"模拟经营","v":"/nes?tag=模拟经营&e=7&page="},{"n":"体育竞技","v":"/nes?tag=体育竞技&e=7&page="},
+            {"n":"赛车竞速","v":"/nes?tag=赛车竞速&e=7&page="},{"n":"格斗游戏","v":"/nes?tag=格斗游戏&e=7&page="},{"n":"大乱斗游戏","v":"/nes?tag=大乱斗游戏&e=7&page="},
+            {"n":"射击游戏","v":"/nes?tag=射击游戏&e=7&page="},{"n":"第一人称射击","v":"/nes?tag=第一人称射击&e=7&page="},{"n":"益智游戏","v":"/nes?tag=益智&e=7&page="},
+            {"n":"养成游戏","v":"/nes?tag=养成游戏&e=7&page="},{"n":"音乐游戏","v":"/nes?tag=音乐游戏&e=7&page="},{"n":"恋爱游戏","v":"/nes?tag=恋爱游戏&e=7&page="},
+            {"n":"卡片游戏","v":"/nes?tag=卡片游戏&e=7&page="},{"n":"桌面游戏","v":"/nes?tag=桌面游戏&e=7&page="}
+          ]}],
+          "/nes?tag=&e=3&page=": [ { key:'class', name:'分类', value:[
+            {"n":"角色扮演","v":"/nes?tag=角色扮演&e=3&page="},{"n":"动作冒险","v":"/nes?tag=动作冒险&e=3&page="},{"n":"策略","v":"/nes?tag=策略&e=3&page="},
+            {"n":"棋牌","v":"/nes?tag=棋牌&e=3&page="},{"n":"射击","v":"/nes?tag=射击&e=3&page="},{"n":"模拟经营","v":"/nes?tag=模拟经营&e=3&page="},
+            {"n":"战棋","v":"/nes?tag=战棋&e=3&page="},{"n":"格斗","v":"/nes?tag=格斗&e=3&page="},{"n":"动作","v":"/nes?tag=动作&e=3&page="},
+            {"n":"解谜","v":"/nes?tag=解谜&e=3&page="},{"n":"模拟","v":"/nes?tag=模拟&e=3&page="},{"n":"休闲益智","v":"/nes?tag=休闲益智&e=3&page="},
+            {"n":"体育","v":"/nes?tag=体育&e=3&page="},{"n":"音乐","v":"/nes?tag=音乐&e=3&page="}
+          ]}]
+        };
+        var PLACEHOLDER='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect width="300" height="400" fill="#f7f7f7"/><text x="150" y="205" fill="#c0c0c0" font-size="18" text-anchor="middle" font-family="sans-serif">暂无封面</text></svg>');
+        var $=function(id){return document.getElementById(id);};
+        function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+        var tabContainer=$('tabContainer'), filterContainer=$('filterContainer'), content=$('content'), statusEl=$('status'), kwInput=$('keyword');
+        var topbar=$('topbar'), topbarSpacer=$('topbarSpacer'), backTopBtn=$('backTop');
+        var state={ type:'/nes?tag=9&e=&page=', page:1, sub:false, subPath:null, loading:false, search:false, searchKw:'', allGames:[] };
+        
+        /* ========== 每页显示数量 ========== */
+        var PAGE_SIZE = 30;   /* 首页加载 30 个,之后每次追加 30 个 */
+        
+        function syncSpacer(){
+          var h = topbar.offsetHeight;
+          topbarSpacer.style.height = h + 'px';
+        }
+        window.addEventListener('load', syncSpacer);
+        window.addEventListener('resize', syncSpacer);
+        if(typeof ResizeObserver !== 'undefined'){
+          try{ new ResizeObserver(syncSpacer).observe(topbar); }catch(e){}
+        }
+        var lastY = 0;
+        var ticking = false;
+        var MIN_HIDE = 60;
+        var DELTA = 4;
+        function onScroll(){
+          var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+          if(y <= MIN_HIDE){
+            topbar.classList.remove('topbar-hidden');
+            if(topbarSpacer.style.height !== topbar.offsetHeight + 'px'){
+              syncSpacer();
+            }
+            lastY = y;
+            updateBackTop(y);
+            return;
+          }
+          var diff = y - lastY;
+          if(diff > DELTA && y > MIN_HIDE){
+            topbar.classList.add('topbar-hidden');
+          }
+          else if(diff < -DELTA){
+            topbar.classList.remove('topbar-hidden');
+          }
+          lastY = y;
+          updateBackTop(y);
+        }
+        window.addEventListener('scroll', function(){
+          if(!ticking){
+            window.requestAnimationFrame(function(){ onScroll(); ticking = false; });
+            ticking = true;
+          }
+        }, {passive:true});
+        function updateBackTop(y){
+          if(y > 300){
+            backTopBtn.classList.add('show');
+          }else{
+            backTopBtn.classList.remove('show');
+          }
+        }
+        backTopBtn.addEventListener('click', function(){
+          try{
+            window.scrollTo({top:0, behavior:'smooth'});
+          }catch(e){
+            window.scrollTo(0,0);
+          }
+          topbar.classList.remove('topbar-hidden');
+          syncSpacer();
+        });
+        function setStatus(t,strong){ statusEl.textContent=t; statusEl.className='status'+(strong?' strong':''); }
+        function emptyHtml(t1,t2){ return '<div class="empty"><span class="t1">'+esc(t1)+'</span><span class="t2">'+esc(t2)+'</span></div>'; }
+        function fullUrl(p){
+          if(!p)return PLACEHOLDER;
+          if(p.indexOf('http')===0)return p;
+          if(p.indexOf('//')===0)return 'https:'+p;
+          return BASE+p.replace(/^\/?/,'/');
+        }
+        /* 图片加 loading="lazy" 懒加载 */
+        function imgTag(title,src){
+          var s=fullUrl(src);
+          return '<img src="'+esc(s)+'" alt="'+esc(title)+'" loading="lazy" referrerpolicy="no-referrer" onerror="if(this.src.indexOf(\'data:\')!==0){this.onerror=null;this.src=\''+PLACEHOLDER+'\';}">';
+        }
+        function cardHtml(g){
+          if(!g)return '';
+          var url=g.url||g.link||'#';
+          var title=g.name||g.title||'未知游戏';
+          var tagsHtml='';
+          if(g.tags&&g.tags.length){
+            tagsHtml='<span class="game-tags">'+g.tags.map(function(t){return '<span class="game-tag">'+esc(t)+'</span>';}).join('')+'</span>';
+          }
+          return '<a class="game-card" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+
+            '<span class="game-cover">'+imgTag(title,g.pic||g.img)+'</span>'+
+            '<span class="game-info"><span class="game-title">'+esc(title)+'</span>'+tagsHtml+'</span>'+
+          '</a>';
+        }
+        function sdkGetText(url){
+          var fm=window.fm;
+          if(fm&&typeof fm.req==='function'){
+            return fm.req(url,{method:'GET',responseType:'text',timeout:30}).then(function(r){
+              var body=typeof r.body==='string'?r.body:(r&&r.text)||'';
+              return {status:(r&&r.status)||(r&&r.ok?200:0),text:body};
+            });
+          }
+          if(typeof fetch==='function'){
+            return fetch(url,{headers:{'Accept':'text/html','User-Agent':'Mozilla/5.0'}}).then(function(res){
+              return res.text().then(function(t){ return {status:res.status,text:t}; });
+            });
+          }
+          return new Promise(function(resolve,reject){
+            var req=new XMLHttpRequest();
+            req.open('GET',url,true); req.timeout=30000;
+            req.onreadystatechange=function(){ if(req.readyState!==4)return; if(req.status>=200&&req.status<300)resolve({status:req.status,text:req.responseText}); else reject(new Error('HTTP '+req.status)); };
+            req.onerror=function(){reject(new Error('network'));}; req.ontimeout=function(){reject(new Error('timeout'));};
+            req.send();
+          });
+        }
+        function renderTabs(){
+          tabContainer.innerHTML='';
+          classes.forEach(function(c){
+            var btn=document.createElement('button');
+            btn.className='tab-btn'+(c.type_id===state.type?' active':'');
+            btn.textContent=c.type_name;
+            btn.onclick=function(){ switchTab(c.type_id); };
+            tabContainer.appendChild(btn);
+          });
+          setTimeout(syncSpacer, 0);
+        }
+        function switchTab(typeId){
+          if(state.loading)return;
+          state.type=typeId; state.page=1; state.sub=false; state.subPath=null; state.search=false; state.searchKw='';
+          state.allGames=[]; kwInput.value='';
+          renderTabs(); renderSubFilters();
+          loadCurrent();
+          try{ window.scrollTo({top:0, behavior:'auto'}); }catch(e){ window.scrollTo(0,0); }
+          topbar.classList.remove('topbar-hidden');
+          syncSpacer();
+        }
+        function renderSubFilters(){
+          filterContainer.innerHTML='';
+          var subFilter=filters[state.type];
+          if(!subFilter||!subFilter[0]||!subFilter[0].value){
+            setTimeout(syncSpacer,0);
+            return;
+          }
+          var allBtn=document.createElement('button');
+          allBtn.className='filter-btn active'; allBtn.textContent='全部';
+          allBtn.onclick=function(){ if(state.loading)return; state.sub=false; state.subPath=null; state.page=1; state.allGames=[]; setActiveFilter(allBtn); loadCurrent(); };
+          filterContainer.appendChild(allBtn);
+          subFilter[0].value.forEach(function(item){
+            var btn=document.createElement('button');
+            btn.className='filter-btn'; btn.textContent=item.n;
+            btn.onclick=function(){ if(state.loading)return; state.sub=true; state.subPath=item.v; state.page=1; state.allGames=[]; setActiveFilter(btn); loadCurrent(); };
+            filterContainer.appendChild(btn);
+          });
+          setTimeout(syncSpacer, 0);
+        }
+        function setActiveFilter(el){
+          Array.prototype.forEach.call(filterContainer.querySelectorAll('.filter-btn'),function(b){b.classList.remove('active');});
+          el.classList.add('active');
+        }
+        function loadCurrent(){
+          var path=state.sub&&state.subPath?state.subPath:state.type;
+          fetchAndRender(path+state.page);
+        }
+        function searchGames(kw){
+          kw=(kw||'').trim();
+          if(!kw){ setStatus('请输入游戏名称'); return; }
+          if(state.loading)return;
+          state.search=true; state.searchKw=kw; state.type=''; state.sub=false; state.subPath=null; state.page=1; state.allGames=[];
+          renderTabs(); renderSubFilters();
+          fetchAndRender('/search?name='+encodeURIComponent(kw), true);
+          try{ window.scrollTo({top:0, behavior:'auto'}); }catch(e){ window.scrollTo(0,0); }
+          topbar.classList.remove('topbar-hidden');
+          syncSpacer();
+        }
+        function resetView(){
+          if(state.loading)return;
+          state.search=false; state.searchKw=''; kwInput.value=''; 
+          state.type='/nes?tag=9&e=&page=';
+          state.page=1; state.sub=false; state.subPath=null; state.allGames=[];
+          renderTabs(); renderSubFilters(); loadCurrent();
+          try{ window.scrollTo({top:0, behavior:'auto'}); }catch(e){ window.scrollTo(0,0); }
+          topbar.classList.remove('topbar-hidden');
+          syncSpacer();
+        }
+        /* ========== 修复版 parseCards: 兼容列表页 + 搜索结果页 ========== */
+        function parseCards(doc){
+          var games=[];
+          /* 两种页面结构都是 .card.card-blog,统一处理 */
+          var cards=doc.querySelectorAll('.card.card-blog');
+          Array.prototype.forEach.call(cards,function(el){
+            /* 找链接: 优先 /play?id= */
+            var linkEl = el.querySelector('a[href*="/play?id="]');
+            if(!linkEl)return;
+            var href = linkEl.getAttribute('href');
+            if(!href)return;
+            var link = href.indexOf('http')===0 ? href : (BASE + href.replace(/^\/?/,'/'));
+            
+            /* 找标题: 搜索结果里是 h4.card-caption a, 列表页也是; 兼容多种 */
+            var titleEl = el.querySelector('h4.card-caption a') 
+                        || el.querySelector('.card-caption a')
+                        || el.querySelector('h4 a')
+                        || el.querySelector('.card-caption')
+                        || el.querySelector('h4');
+            var title = titleEl ? titleEl.textContent.trim() : '未知游戏';
+            
+            /* 找图片: 优先 .card-image img (搜索结果页), 其次任意 img */
+            var img = el.querySelector('.card-image img') || el.querySelector('img');
+            var imgSrc = '';
+            if(img){
+              imgSrc = img.getAttribute('data-src') 
+                     || img.getAttribute('data-original') 
+                     || img.getAttribute('src') 
+                     || '';
+            }
+            
+            /* 找标签: .label (搜索结果页的标签), 兼容 .badge .tag */
+            var tags=[];
+            Array.prototype.forEach.call(el.querySelectorAll('.label, .badge, .tag'), function(t){
+              var s = t.textContent.trim();
+              if(s) tags.push(s);
+            });
+            
+            games.push({
+              title: title,
+              link: link,
+              img: imgSrc,
+              tags: tags.slice(0, 3)   /* 搜索页标签多, 取前3个 */
+            });
+          });
+          return games;
+        }
+        /* 渲染时截取到 PAGE_SIZE 个 */
+        function renderGames(games){
+          content.innerHTML='';
+          if(!games||!games.length){ content.innerHTML=emptyHtml('暂无游戏','换个分类或搜索关键词试试'); return; }
+          var displayGames = games.slice(0, PAGE_SIZE);
+          var html=displayGames.map(cardHtml).join('');
+          content.innerHTML=html;
+        }
+        function fetchAndRender(path,isSearch){
+          if(state.loading)return;
+          state.loading=true;
+          setStatus(isSearch?'正在搜索「'+state.searchKw+'」...':'加载中...',true);
+          content.innerHTML=emptyHtml('加载中','正在获取游戏列表');
+          var url=fullUrl(path);
+          sdkGetText(url).then(function(res){
+            state.loading=false;
+            try{
+              if(res.status<200||res.status>=300)throw new Error('HTTP '+res.status);
+              var doc=new DOMParser().parseFromString(res.text,'text/html');
+              var games=parseCards(doc);
+              state.allGames=state.allGames.concat(games);
+              if(!games.length&&state.allGames.length){ renderGames(state.allGames); return; }
+              renderGames(state.allGames);
+              if(isSearch){ setStatus('「'+state.searchKw+'」找到 '+state.allGames.length+' 个结果',true); }
+              else{ setStatus('已加载 '+Math.min(state.allGames.length, PAGE_SIZE)+' 款游戏',true); }
+            }catch(e){
+              state.loading=false;
+              var isPreview=typeof window.fm==='undefined'||!window.fm||!window.fm.req;
+              content.innerHTML=emptyHtml('请求失败',isPreview?'浏览器跨域受限 · 请放入默影视 WebHome 使用(fm.req 无此限制)':'请检查网络后重试');
+              setStatus(isPreview?'浏览器跨域受限 · 请放入 WebHome 使用':'请求失败');
+            }
+          }).catch(function(){
+            state.loading=false;
+            var isPreview=typeof window.fm==='undefined'||!window.fm||!window.fm.req;
+            content.innerHTML=emptyHtml('请求失败',isPreview?'浏览器跨域受限 · 请放入默影视 WebHome 使用(fm.req 无此限制)':'请检查网络后重试');
+            setStatus(isPreview?'浏览器跨域受限 · 请放入 WebHome 使用':'请求失败');
+          });
+        }
+        /* 滚动到底自动加载,每次追加至多 PAGE_SIZE 个 (搜索模式不再自动翻页,避免搜索结果重复) */
+        window.addEventListener('scroll',function(){
+          if(state.loading||state.search)return;
+          var scrollTop=window.pageYOffset||document.documentElement.scrollTop||0;
+          var scrollHeight=document.documentElement.scrollHeight;
+          var clientHeight=window.innerHeight||document.documentElement.clientHeight||0;
+          if(scrollTop+clientHeight>=scrollHeight-320){
+            /* 若还有未显示的,先补显示接下来的 PAGE_SIZE 个 */
+            var shown = content.querySelectorAll('.game-card').length;
+            if(shown < state.allGames.length){
+              var nextBatch = state.allGames.slice(shown, shown + PAGE_SIZE);
+              if(nextBatch.length){
+                var tempDiv = document.createElement('div');
+                tempDiv.innerHTML = nextBatch.map(cardHtml).join('');
+                while(tempDiv.firstChild){ content.appendChild(tempDiv.firstChild); }
+                setStatus('已加载 '+content.querySelectorAll('.game-card').length+' 款游戏',true);
+                return;
+              }
+            }
+            /* 否则请求下一页 */
+            state.loading=true;
+            state.page++;
+            var path=(state.sub&&state.subPath?state.subPath:state.type)+state.page;
+            sdkGetText(fullUrl(path)).then(function(res){
+              state.loading=false;
+              try{
+                var doc=new DOMParser().parseFromString(res.text,'text/html');
+                var games=parseCards(doc);
+                if(!games.length){ state.page--; return; }
+                state.allGames=state.allGames.concat(games);
+                var shown2 = content.querySelectorAll('.game-card').length;
+                var nextBatch2 = state.allGames.slice(shown2, shown2 + PAGE_SIZE);
+                if(nextBatch2.length){
+                  var tempDiv2 = document.createElement('div');
+                  tempDiv2.innerHTML = nextBatch2.map(cardHtml).join('');
+                  while(tempDiv2.firstChild){ content.appendChild(tempDiv2.firstChild); }
+                }
+                setStatus('已加载 '+content.querySelectorAll('.game-card').length+' 款游戏',true);
+              }catch(e){ state.page--; }
+            }).catch(function(){ state.page--; state.loading=false; });
+          }
+        }, {passive:true});
+        $('searchBtn').onclick=function(){ searchGames(kwInput.value); };
+        kwInput.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); searchGames(kwInput.value); } });
+        $('resetBtn').onclick=function(){ resetView(); };
+        var wt=$('tygameToggle');
+        if(wt){ wt.onclick=function(){ 
+          try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(e){ window.scrollTo(0,0); }
+          topbar.classList.remove('topbar-hidden');
+        }; wt.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){e.preventDefault(); try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(err){ window.scrollTo(0,0); } topbar.classList.remove('topbar-hidden');} }); }
+        renderTabs();
+        renderSubFilters();
+        loadCurrent();
+        setTimeout(syncSpacer, 0);
+        setTimeout(syncSpacer, 120);
+        setTimeout(syncSpacer, 400);
+        kwInput.addEventListener('focus', function(){
+          topbar.classList.remove('topbar-hidden');
+          syncSpacer();
+        });
+        })();
+    </script>
+</body>
+
+</html>

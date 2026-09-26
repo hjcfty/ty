@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天扬·加密解密工具箱</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js">
+    </script>
+
+    <style>
+        /* ---- 全局基础样式 ---- */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 15px;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+        }
+        .container {
+            max-width: 820px;
+            margin: 20px auto;
+            background: white;
+            padding: 24px 28px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        .main-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+        }
+        
+        /* ---- 顶部标签页 ---- */
+        .tab-buttons {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 4px;
+            margin-bottom: 22px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
+            overflow-x: auto;
+        }
+        .tab-btn {
+            flex: 1 1 0;
+            padding: 6px 8px;
+            cursor: pointer;
+            border: 1px solid #d0d0d0;
+            background-color: #f8f8fa;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px 6px 0 0;
+            transition: all 0.15s;
+            text-align: center;
+            white-space: nowrap;
+            color: #555;
+            min-width: 0;
+        }
+        .tab-btn:hover {
+            background-color: #eef5ff;
+            border-color: #a0c0e8;
+        }
+        .tab-btn.active {
+            background-color: #2c3e50;
+            color: white;
+            border-color: #2c3e50;
+        }
+        
+        /* ---- 工具内容 ---- */
+        .tab-content {
+            display: none;
+            animation: fade 0.2s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fade {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        h3 {
+            margin-top: 4px;
+            margin-bottom: 14px;
+            font-size: 18px;
+            color: #2c3e50;
+            border-left: 5px solid #3498db;
+            padding-left: 12px;
+        }
+        label {
+            display: block;
+            margin-top: 16px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #444;
+        }
+        textarea,
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 14px;
+            margin-top: 6px;
+            border: 1px solid #ccd0d7;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 15px;
+            font-family: inherit;
+            background: #fcfcfc;
+            transition: border 0.2s;
+        }
+        textarea:focus,
+        input[type="text"]:focus {
+            border-color: #3498db;
+            outline: none;
+            background: #fff;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 16px 0 10px;
+        }
+        .btn {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex: 1 0 auto;
+            min-width: 80px;
+        }
+        .btn:hover {
+            opacity: 0.88;
+            transform: translateY(-1px);
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        
+        .btn-blue { background: #3498db; color: white; }
+        .btn-green { background: #27ae60; color: white; }
+        .btn-orange { background: #e67e22; color: white; }
+        .btn-purple { background: #8e44ad; color: white; }
+        .btn-dark { background: #2c3e50; color: white; }
+        .btn-gray { background: #95a5a6; color: white; flex: 0.4; }
+        .btn-light { background: #e9ecef; color: #333; border: 1px solid #ddd; }
+        
+        .result-container {
+            position: relative;
+            margin-top: 6px;
+        }
+        .btn-copy {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            background: #3498db;
+            color: white;
+            padding: 6px 18px;
+            font-size: 13px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            transition: 0.15s;
+        }
+        .btn-copy:hover {
+            background: #2980b9;
+            transform: scale(1.03);
+        }
+        
+        #toast {
+            visibility: hidden;
+            min-width: 180px;
+            background: rgba(44, 62, 80, 0.92);
+            color: #fff;
+            text-align: center;
+            border-radius: 40px;
+            padding: 12px 24px;
+            position: fixed;
+            z-index: 999;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.25s, visibility 0.25s;
+            pointer-events: none;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* ---- AES 工具（无状态提示） ---- */
+        #aes-tool .aes-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #aes-tool .aes-mode-group {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+        #aes-tool .aes-mode-group .btn {
+            flex: 1;
+            min-width: 60px;
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 30px;
+            border: 1px solid #ddd;
+            background: #f0f0f0;
+            color: #888;
+        }
+        #aes-tool .aes-mode-group .btn.active {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        #aes-tool .aes-key-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 20px;
+            align-items: center;
+            padding: 2px 0;
+        }
+        #aes-tool .aes-key-row label {
+            font-weight: 600;
+            color: #555;
+            min-width: 40px;
+            margin: 0;
+            font-size: 14px;
+        }
+        #aes-tool .aes-key-row input {
+            flex: 1;
+            min-width: 100px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 15px;
+            background: white;
+            margin: 0;
+        }
+        #aes-tool .aes-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        #aes-tool .aes-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 15px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            background: #fafafa;
+            transition: 0.2s;
+            min-height: 70px;
+        }
+        #aes-tool .aes-textarea:focus {
+            border-color: #28a745;
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(40,167,69,0.1);
+        }
+        #aes-tool .aes-textarea[readonly] {
+            background: #f0f0f0;
+        }
+        #aes-tool .aes-action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin: 4px 0;
+        }
+        #aes-tool .aes-action-row .right-group {
+            margin-left: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        #aes-tool .aes-char-count {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        #aes-tool .aes-checkbox-label {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 16px;
+            }
+            .tab-btn {
+                font-size: 12px;
+                padding: 4px 6px;
+            }
+            .btn {
+                font-size: 13px;
+                padding: 8px 12px;
+                min-width: 60px;
+            }
+            .main-title {
+                font-size: 22px;
+                margin-bottom: 12px;
+            }
+            #aes-tool .aes-key-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+            #aes-tool .aes-action-row .right-group {
+                flex-wrap: wrap;
+            }
+            #aes-tool .aes-textarea {
+                min-height: 60px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="main-title">🧰 天扬·加解密工具箱</div>
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="b64-tool">Base64</button>
+            <button class="tab-btn" data-tab="url-tool">URL</button>
+            <button class="tab-btn" data-tab="aes-tool">AES</button>
+            <button class="tab-btn" data-tab="bjx-tool">百家姓</button>
+        </div>
+
+        <!-- Base64 -->
+        <div id="b64-tool" class="tab-content active">
+            <h3>🔐 Base64 编解码</h3>
+            <label>请输入原文：</label>
+            <textarea id="b64_sourceText" rows="4" placeholder="在此输入需要转换的内容..."></textarea>
+            <div class="btn-group">
+                <button class="btn btn-blue" onclick="doEncode()">编码 → Base64</button>
+                <button class="btn btn-green" onclick="doDecode()">解码 ← 原文</button>
+                <button class="btn btn-gray" onclick="clearB64()">清空</button>
+            </div>
+            <label>转换结果：</label>
+            <div class="result-container">
+                <textarea id="b64_resultText" rows="4" readonly placeholder="结果会显示在这里..."></textarea>
+                <button class="btn-copy" onclick="copyText('b64_resultText')">📋 复制</button>
+            </div>
+        </div>
+
+        <!-- URL -->
+        <div id="url-tool" class="tab-content">
+            <h3>🔗 URL 编解码</h3>
+            <label>请输入内容（网址或文字）：</label>
+            <textarea id="url_sourceText" rows="4" placeholder="在此输入需要编码或解码的网址/文字..."></textarea>
+            <div class="btn-group">
+                <button class="btn btn-orange" onclick="doUrlEncode()">URL 编码</button>
+                <button class="btn btn-purple" onclick="doUrlDecode()">URL 解码</button>
+                <button class="btn btn-gray" onclick="clearUrl()">清空</button>
+            </div>
+            <label>转换结果：</label>
+            <div class="result-container">
+                <textarea id="url_resultText" rows="4" readonly placeholder="结果会显示在这里..."></textarea>
+                <button class="btn-copy" onclick="copyText('url_resultText')">📋 复制</button>
+            </div>
+        </div>
+
+        <!-- AES（修复：切换模式时静默清空，不弹toast） -->
+        <div id="aes-tool" class="tab-content">
+            <div class="aes-panel">
+                <!-- 模式切换 -->
+                <div class="aes-mode-group">
+                    <button class="btn active" data-mode="enc" onclick="aesApp.switchMode('enc')">加密</button>
+                    <button class="btn" data-mode="dec" onclick="aesApp.switchMode('dec')">解密</button>
+                </div>
+
+                <div class="aes-key-row">
+                    <label>密钥</label>
+                    <input id="aesKeyInput" value="123456" placeholder="≤16位">
+                </div>
+
+                <div class="aes-label-row">
+                    <span id="aesPanelInputLabel">📝 输入</span>
+                    <span class="aes-char-count" id="aesCharCount">0 字符</span>
+                </div>
+                <textarea id="aesInputText" class="aes-textarea" placeholder="请输入要加密的文本..."></textarea>
+
+                <!-- 操作行 -->
+                <div class="aes-action-row">
+                    <div class="right-group" style="margin-left:0; width:100%; justify-content:flex-end;">
+                        <div class="aes-file-wrap" style="position:relative;display:inline-block;">
+                            <button class="btn btn-light" style="flex:0 0 auto;">📁 上传文件</button>
+                            <input type="file" id="aesFileInput" accept=".txt,.json,.xml,.csv,.html,.js,.css,.md" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;">
+                        </div>
+                        <button class="btn btn-light" style="flex:0 0 auto;" onclick="aesApp.clearInput()">清空输入</button>
+                        <label class="aes-checkbox-label" id="aesBase64Label" style="display:none;">
+                            <input type="checkbox" id="aesBase64Checkbox"> Base64
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 执行按钮 -->
+                <button class="btn btn-green" id="aesProcessBtn" onclick="aesApp.process()" style="flex-shrink:0; padding:10px 20px; font-size:15px;">
+                    <span id="aesActionText">开始加密</span>
+                </button>
+
+                <div class="aes-label-row">
+                    <span>📤 结果</span>
+                    <span class="aes-char-count" id="aesOutCount">0 字符</span>
+                </div>
+                <textarea id="aesOutputText" class="aes-textarea" placeholder="结果将显示在这里..." readonly></textarea>
+
+                <!-- 输出操作行 -->
+                <div class="aes-action-row">
+                    <div class="right-group" style="margin-left:0; width:100%; justify-content:flex-end;">
+                        <button class="btn btn-light" style="flex:0 0 auto;" onclick="aesApp.clearOutput()">清空输出</button>
+                        <button class="btn btn-blue" style="flex:0 0 auto;" onclick="aesApp.copyResult()">📋 复制</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 百家姓 -->
+        <div id="bjx-tool" class="tab-content">
+            <h3>📜 百家姓 · 双向转换</h3>
+            <label>输入暗号或链接（支持多行）：</label>
+            <textarea id="bjx_sourceText" rows="4" placeholder="输入百家姓暗号（纯中文）或磁力/ed2k/普通链接…&#10;每行一条，自动批量处理"></textarea>
+            <div class="btn-group">
+                <button class="btn btn-dark" onclick="bjxConvert()">🔄 转换（自动识别方向）</button>
+                <button class="btn btn-gray" onclick="clearBjx()">清空</button>
+            </div>
+            <label>转换结果：</label>
+            <div class="result-container">
+                <textarea id="bjx_resultText" rows="4" readonly placeholder="结果会显示在这里..."></textarea>
+                <button class="btn-copy" onclick="copyText('bjx_resultText')">📋 复制</button>
+            </div>
+            <div style="margin-top:12px;font-size:13px;color:#7f8c8d;display:flex;gap:20px;flex-wrap:wrap;">
+                <span>📊 累计转换：<strong id="statTotal">0</strong></span>
+                <span>📅 今日：<strong id="statToday">0</strong></span>
+                <span>📏 结果长度：<strong id="statLen">0</strong></span>
+            </div>
+        </div>
+
+        <div id="toast">✅ 已复制</div>
+    </div>
+
+    <script>
+        /* ============================================================
+           1. 标签切换
+           ============================================================ */
+        document.querySelectorAll('.tab-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var targetId = this.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(function(tc) {
+                    tc.classList.remove('active');
+                });
+                document.getElementById(targetId).classList.add('active');
+                document.querySelectorAll('.tab-btn').forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+        
+        /* ============================================================
+           2. Toast & 复制
+           ============================================================ */
+        function showToast(msg) {
+            var t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'show';
+            clearTimeout(t._hide);
+            t._hide = setTimeout(function() { t.classList.remove('show'); }, 1200);
+        }
+        
+        function copyText(textareaId) {
+            var el = document.getElementById(textareaId);
+            if (!el || !el.value.trim()) {
+                showToast('⚠️ 没有可复制的内容');
+                return;
+            }
+            el.select();
+            el.setSelectionRange(0, el.value.length);
+            try {
+                document.execCommand('copy');
+                showToast('天扬已为你复制');
+            } catch (e) {
+                showToast('❌ 复制失败，请手动选择');
+            }
+        }
+        
+        /* ============================================================
+           3. Base64 工具
+           ============================================================ */
+        function doEncode() {
+            var src = document.getElementById('b64_sourceText').value;
+            if (!src) return showToast('请输入内容');
+            try {
+                var str = encodeURIComponent(src).replace(/%([0-9A-F]{2})/g, function(m, p) {
+                    return String.fromCharCode('0x' + p);
+                });
+                document.getElementById('b64_resultText').value = btoa(str);
+            } catch (e) {
+                showToast('编码失败');
+            }
+        }
+        
+        function doDecode() {
+            var src = document.getElementById('b64_sourceText').value;
+            if (!src) return showToast('请输入内容');
+            try {
+                var str = atob(src);
+                var decoded = decodeURIComponent([...str].map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                document.getElementById('b64_resultText').value = decoded;
+            } catch (e) {
+                showToast('解码失败，请检查是否为有效Base64');
+            }
+        }
+        
+        function clearB64() {
+            document.getElementById('b64_sourceText').value = '';
+            document.getElementById('b64_resultText').value = '';
+        }
+        
+        /* ============================================================
+           4. URL 工具
+           ============================================================ */
+        function doUrlEncode() {
+            var s = document.getElementById('url_sourceText').value;
+            if (!s) return showToast('请输入内容');
+            try {
+                document.getElementById('url_resultText').value = encodeURIComponent(s);
+            } catch (e) { showToast('编码失败'); }
+        }
+        
+        function doUrlDecode() {
+            var s = document.getElementById('url_sourceText').value;
+            if (!s) return showToast('请输入内容');
+            try {
+                document.getElementById('url_resultText').value = decodeURIComponent(s);
+            } catch (e) { showToast('解码失败，请检查是否为有效的URL编码'); }
+        }
+        
+        function clearUrl() {
+            document.getElementById('url_sourceText').value = '';
+            document.getElementById('url_resultText').value = '';
+        }
+        
+        /* ============================================================
+           5. AES 工具（修复：切换模式时静默清空，不弹toast）
+           ============================================================ */
+        class AESCrypto {
+            static padTo16Byte(str) { return CryptoJS.enc.Utf8.parse(str.toString().padEnd(16, '0')); }
+            static Encrypt(word, keyStr, ivStr) {
+                const key = this.padTo16Byte(keyStr);
+                const iv = this.padTo16Byte(ivStr);
+                const encrypted = CryptoJS.AES.encrypt(word, key, { iv: iv });
+                return encrypted.ciphertext.toString(CryptoJS.enc.Hex);
+            }
+            static Decrypt(word, keyStr, ivStr) {
+                const key = this.padTo16Byte(keyStr);
+                const iv = this.padTo16Byte(ivStr);
+                const ciphertext = CryptoJS.enc.Hex.parse(word);
+                const decrypt = CryptoJS.AES.decrypt({ ciphertext }, key, { iv });
+                return decrypt.toString(CryptoJS.enc.Utf8);
+            }
+            static decryptAesBCB(encryptedData) {
+                const dataArr = encryptedData.split("");
+                const prefixCode = CryptoJS.enc.Utf8.parse("$#").toString();
+                const suffixCode = CryptoJS.enc.Utf8.parse("#$").toString();
+                const pwdMix = dataArr.splice(0, encryptedData.indexOf(suffixCode) + 4).join("");
+                const roundtimeInHax = dataArr.splice(dataArr.length - 26, 26).join("");
+                const encryptedText = dataArr.join("");
+                const pwdInHax = pwdMix.substring(prefixCode.length, pwdMix.length - suffixCode.length);
+                const roundTime = CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Hex.parse(roundtimeInHax));
+                const pwd = CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Hex.parse(pwdInHax));
+                const iv = CryptoJS.enc.Utf8.parse(roundTime.padEnd(16, "0"));
+                const pkBlocks = CryptoJS.enc.Utf8.parse(pwd.padEnd(16, "0"));
+                const cipherParams = CryptoJS.lib.CipherParams.create({
+                    ciphertext: CryptoJS.enc.Hex.parse(encryptedText),
+                });
+                return CryptoJS.enc.Utf8.stringify(
+                    CryptoJS.AES.decrypt(cipherParams, pkBlocks, { iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad
+                            .Pkcs7 })
+                );
+            }
+            static convertToHex(value) { return CryptoJS.enc.Hex.stringify(CryptoJS.enc.Utf8.parse(value)); }
+            static fullEncrypt(text, key, iv) {
+                try {
+                    const encryptedData = this.Encrypt(text, key, iv);
+                    const keyHex = this.convertToHex(`$#${key}#$`);
+                    const ivHex = this.convertToHex(iv);
+                    return `${keyHex}${encryptedData}${ivHex}`;
+                } catch (e) { throw new Error("加密失败: " + e.message); }
+            }
+            static fullDecrypt(encryptedData, isBase64Encoded = false) {
+                try {
+                    let data = encryptedData;
+                    if (isBase64Encoded) data = window.atob(data?.split("**")?.[1] || data);
+                    return this.decryptAesBCB(data);
+                } catch (e) { throw new Error("解密失败: " + e.message); }
+            }
+        }
+        
+        class AesApp {
+            constructor() {
+                this.processing = false;
+                this.mode = 'enc';
+                this.init();
+            }
+            init() {
+                document.getElementById('aesInputText').addEventListener('input', (e) => {
+                    document.getElementById('aesCharCount').textContent = e.target.value.length + ' 字符';
+                });
+                document.getElementById('aesOutputText').addEventListener('input', (e) => {
+                    document.getElementById('aesOutCount').textContent = e.target.value.length + ' 字符';
+                });
+                document.getElementById('aesKeyInput').addEventListener('input', (e) => {
+                    if (e.target.value.length > 16) {
+                        e.target.value = e.target.value.substring(0, 16);
+                        this.showToast('密钥最长16位');
+                    }
+                });
+                document.getElementById('aesFileInput').addEventListener('change', (e) => this.handleFileUpload(e));
+                document.getElementById('aesBase64Checkbox').addEventListener('change', (e) => {
+                    // 无状态提示
+                });
+                this.switchMode('enc');
+            }
+            getIV() { return Date.now().toString(); }
+            switchMode(mode) {
+                this.mode = mode;
+                const btns = document.querySelectorAll('#aes-tool .aes-mode-group .btn');
+                btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+                const input = document.getElementById('aesInputText');
+                const output = document.getElementById('aesOutputText');
+                const action = document.getElementById('aesActionText');
+                const label = document.getElementById('aesPanelInputLabel');
+                const base64Label = document.getElementById('aesBase64Label');
+                const processBtn = document.getElementById('aesProcessBtn');
+                if (mode === 'enc') {
+                    input.placeholder = '请输入要加密的文本...';
+                    output.placeholder = '加密结果将显示在这里...';
+                    action.textContent = '开始加密';
+                    label.textContent = '📝 输入 (明文)';
+                    base64Label.style.display = 'none';
+                    processBtn.className = 'btn btn-green';
+                } else {
+                    input.placeholder = '请输入加密后的字符串...';
+                    output.placeholder = '解密结果将显示在这里...';
+                    action.textContent = '开始解密';
+                    label.textContent = '📝 输入 (密文)';
+                    base64Label.style.display = 'inline-flex';
+                    processBtn.className = 'btn btn-blue';
+                }
+                // 静默清空，不弹出 toast
+                this.clearInputSilent();
+                this.clearOutputSilent();
+            }
+            // 静默清空输入（不弹toast）
+            clearInputSilent() {
+                document.getElementById('aesInputText').value = '';
+                document.getElementById('aesCharCount').textContent = '0 字符';
+            }
+            // 静默清空输出（不弹toast）
+            clearOutputSilent() {
+                document.getElementById('aesOutputText').value = '';
+                document.getElementById('aesOutCount').textContent = '0 字符';
+            }
+            // 手动清空输入（弹toast）
+            clearInput() {
+                this.clearInputSilent();
+                this.showToast('已清空输入');
+            }
+            // 手动清空输出（弹toast）
+            clearOutput() {
+                this.clearOutputSilent();
+                this.showToast('已清空输出');
+            }
+            handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) { this.showToast('文件过大 (>5MB)'); return; }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    document.getElementById('aesInputText').value = content;
+                    document.getElementById('aesCharCount').textContent = content.length + ' 字符';
+                    this.showToast('加载成功');
+                };
+                reader.onerror = () => {
+                    this.showToast('读取失败');
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            }
+            async process() {
+                if (this.processing) return;
+                const input = document.getElementById('aesInputText').value.trim();
+                if (!input) { this.showToast('请输入内容'); return; }
+                const key = document.getElementById('aesKeyInput').value.trim();
+                if (!key) { this.showToast('请输入密钥'); return; }
+                const iv = this.getIV();
+                const isBase64 = document.getElementById('aesBase64Checkbox').checked;
+                this.processing = true;
+                const btn = document.getElementById('aesProcessBtn');
+                btn.disabled = true;
+                const output = document.getElementById('aesOutputText');
+                try {
+                    if (this.mode === 'enc') {
+                        const result = AESCrypto.fullEncrypt(input, key, iv);
+                        output.value = result;
+                        document.getElementById('aesOutCount').textContent = result.length + ' 字符';
+                        this.showToast('加密成功');
+                    } else {
+                        const result = AESCrypto.fullDecrypt(input, isBase64);
+                        output.value = result;
+                        document.getElementById('aesOutCount').textContent = result.length + ' 字符';
+                        this.showToast('解密成功');
+                    }
+                } catch (err) {
+                    output.value = '错误: ' + err.message;
+                    document.getElementById('aesOutCount').textContent = '0 字符';
+                    this.showToast('操作失败');
+                } finally {
+                    this.processing = false;
+                    btn.disabled = false;
+                }
+            }
+            copyResult() {
+                const text = document.getElementById('aesOutputText').value;
+                if (!text) { this.showToast('没有内容'); return; }
+                const tmp = document.createElement('textarea');
+                tmp.style.position = 'absolute';
+                tmp.style.left = '-9999px';
+                tmp.style.opacity = '0';
+                document.body.appendChild(tmp);
+                tmp.value = text;
+                tmp.select();
+                try {
+                    const success = document.execCommand('copy');
+                    if (success) {
+                        this.showToast('天扬已为你复制');
+                    } else {
+                        this.showToast('复制失败');
+                    }
+                } catch {
+                    navigator.clipboard.writeText(text).then(() => {
+                        this.showToast('天扬已为你复制');
+                    }).catch(() => {
+                        this.showToast('复制失败');
+                    });
+                }
+                document.body.removeChild(tmp);
+            }
+            showToast(msg) {
+                showToast(msg);
+            }
+        }
+        
+        var aesApp = new AesApp();
+        
+        /* ============================================================
+           6. 百家姓工具
+           ============================================================ */
+        var magnetHeader = "magnet:?xt=urn:btih:";
+        var nameMap = {
+            "赵": "0", "钱": "1", "孙": "2", "李": "3", "周": "4", "吴": "5", "郑": "6", "王": "7",
+            "冯": "8", "陈": "9", "褚": "a", "卫": "b", "蒋": "c", "沈": "d", "韩": "e", "杨": "f",
+            "朱": "g", "秦": "h", "尤": "i", "许": "j", "何": "k", "吕": "l", "施": "m", "张": "n",
+            "孔": "o", "曹": "p", "严": "q", "华": "r", "金": "s", "魏": "t", "陶": "u", "姜": "v",
+            "戚": "w", "谢": "x", "邹": "y", "喻": "z",
+            "福": "A", "水": "B", "窦": "C", "章": "D", "云": "E", "苏": "F", "潘": "G", "葛": "H",
+            "奚": "I", "范": "J", "彭": "K", "郎": "L", "鲁": "M", "韦": "N", "昌": "O", "马": "P",
+            "苗": "Q", "凤": "R", "花": "S", "方": "T", "俞": "U", "任": "V", "袁": "W", "柳": "X",
+            "唐": "Y", "罗": "Z",
+            "薛": ".", "伍": "-", "余": "_", "米": "+", "贝": "=", "姚": "/", "孟": "?", "顾": "#",
+            "尹": "%", "江": "&", "钟": "*", "竺": ":", "赖": "|", "卜": "|"
+        };
+        
+        var _revCache = null,
+            _revSrc = null;
+        
+        function ay(map, val) {
+            if (_revSrc !== map) {
+                _revCache = Object.create(null);
+                for (var k in map) {
+                    if (Object.prototype.hasOwnProperty.call(map, k) && !(map[k] in _revCache)) {
+                        _revCache[map[k]] = k;
+                    }
+                }
+                _revSrc = map;
+            }
+            return val in _revCache ? _revCache[val] : '';
+        }
+        
+        function cy(map, key) {
+            return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : '';
+        }
+        
+        function pctEscapeChar(ch) {
+            return encodeURIComponent(ch).replace(/[!'()*~]/g, function(c) {
+                return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+            });
+        }
+        
+        function isChinese(str) { return /^[\u4E00-\u9FA5]+$/.test(str); }
+        
+        function isMagnet(str) { return /^magnet:\?xt=urn:btih:[0-9a-fA-F]{40,}.*$/.test(str); }
+        
+        function isEd2k(str) { return /^ed2k:\/\/\|file\|.+\|\d+\|[0-9a-fA-F]{32}\|\//.test(str); }
+        
+        function isRawLink(str) {
+            return /^thunder:\/\//.test(str) || /^https?:\/\//.test(str) || /^www\./.test(str);
+        }
+        
+        function transToPlain(str) {
+            str = str.replace(/^\s+/, '').replace(/\s+$/, '');
+            var c = '';
+            for (var i = 0; i < str.length; i++) {
+                c += cy(nameMap, str[i]);
+            }
+            var withMagnet = magnetHeader + c;
+            if (isMagnet(withMagnet)) return withMagnet;
+            if (isEd2k(c) || /^[a-z][a-z0-9+\-.]*:\/\//i.test(c)) return c;
+            return c;
+        }
+        
+        function transToName(str, quiet) {
+            str = str.replace(/^\s+/, '').replace(/\s+$/, '');
+            var v = str.replace(/^magnet:\?xt=urn:btih:/, '');
+            var a = '',
+                escaped = 0;
+            for (var i = 0; i < v.length; i++) {
+                var ch = v[i];
+                var mapped = ay(nameMap, ch);
+                if (mapped !== '') { a += mapped; continue; }
+                if (ch.trim() === '') continue;
+                var enc = pctEscapeChar(ch),
+                    buf = '',
+                    ok = true;
+                for (var j = 0; j < enc.length; j++) {
+                    var m2 = ay(nameMap, enc[j]);
+                    if (m2 === '') { ok = false; break; }
+                    buf += m2;
+                }
+                if (ok) { a += buf;
+                    escaped++; }
+            }
+            if (escaped && !quiet) {
+                showToast('ℹ️ 含 ' + escaped + ' 个特殊字符，已自动转义编码');
+            }
+            return a;
+        }
+        
+        function convertLine(line) {
+            var t = isEd2k(line.trim()) ? line.trim() : line.replace(/\s+/g, '');
+            if (!t) return '';
+            if (isRawLink(t) || isEd2k(t)) return transToName(t, true);
+            if (isChinese(t)) return transToPlain(t);
+            try { decodeURIComponent(t); } catch (_) {}
+            return transToName(t, true);
+        }
+        
+        var totalCount = parseInt(localStorage.getItem('bjx_total') || '0');
+        var todayCount = parseInt(localStorage.getItem('bjx_today') || '0');
+        var todayDate = localStorage.getItem('bjx_today_date') || '';
+        
+        function updateBjxStats() {
+            var now = new Date().toDateString();
+            if (todayDate !== now) {
+                todayCount = 0;
+                localStorage.setItem('bjx_today_date', now);
+                localStorage.setItem('bjx_today', '0');
+            }
+            document.getElementById('statTotal').textContent = totalCount;
+            document.getElementById('statToday').textContent = todayCount;
+        }
+        
+        function recordBjx() {
+            totalCount++;
+            todayCount++;
+            localStorage.setItem('bjx_total', String(totalCount));
+            localStorage.setItem('bjx_today', String(todayCount));
+            var now = new Date().toDateString();
+            localStorage.setItem('bjx_today_date', now);
+            updateBjxStats();
+        }
+        
+        function bjxConvert() {
+            var raw = document.getElementById('bjx_sourceText').value;
+            var lines = raw.split(/\r?\n/).map(function(s) { return s.trim(); }).filter(function(s) { return s.length; });
+            var output = '';
+            if (lines.length === 0) {
+                document.getElementById('bjx_resultText').value = '';
+                document.getElementById('statLen').textContent = '0';
+                return;
+            }
+            if (lines.length === 1) {
+                output = convertLine(lines[0]);
+            } else {
+                var results = lines.map(function(line) { return convertLine(line); });
+                output = results.join('\n');
+            }
+            var resultEl = document.getElementById('bjx_resultText');
+            resultEl.value = output || '（无可转换内容）';
+            document.getElementById('statLen').textContent = String(output.length);
+            if (output.trim()) {
+                recordBjx();
+            }
+        }
+        
+        function clearBjx() {
+            document.getElementById('bjx_sourceText').value = '';
+            document.getElementById('bjx_resultText').value = '';
+            document.getElementById('statLen').textContent = '0';
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                var active = document.querySelector('.tab-content.active');
+                if (active && active.id === 'bjx-tool') {
+                    e.preventDefault();
+                    bjxConvert();
+                }
+            }
+        });
+        
+        updateBjxStats();
+        console.log('✅ 天扬工具箱已加载，AES 切换模式时不再弹出清空提示');
+    </script>
+
+</body>
+
+</html>
